@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BindCraft – Sign In / Create Account</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:     #c9973b;
+      --gold-lt:  #f0c96a;
+      --ink:      #1a1008;
+      --ink-soft: #2a1a08;
+      --page:     #fdf8f0;
+      --page-dim: rgba(253,248,240,0.06);
+      --page-mid: rgba(253,248,240,0.55);
+      --border:   rgba(201,151,59,0.2);
+      --border-hi: rgba(201,151,59,0.55);
+      --red:      #d4607a;
+      --green:    #60c060;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--page);
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS BG ── */
+    #bgCanvas {
+      position: fixed; inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── GRID TEXTURE ── */
+    .grid-texture {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(201,151,59,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,151,59,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── ORBS ── */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; z-index: 1;
+    }
+    .orb-1 { width: 500px; height: 500px; top: -150px; left: -150px;
+      background: radial-gradient(circle, rgba(201,151,59,0.18), transparent 70%); }
+    .orb-2 { width: 400px; height: 400px; bottom: -100px; right: -100px;
+      background: radial-gradient(circle, rgba(212,96,122,0.12), transparent 70%); }
+    .orb-3 { width: 300px; height: 300px; top: 50%; left: 55%;
+      background: radial-gradient(circle, rgba(201,151,59,0.08), transparent 70%);
+      animation: orb-drift 8s ease-in-out infinite alternate; }
+    @keyframes orb-drift {
+      from { transform: translate(-50%,-50%) scale(1); }
+      to   { transform: translate(-50%,-50%) scale(1.3) rotate(20deg); }
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* ── LEFT PANEL ── */
+    .panel-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 4rem;
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-left::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(201,151,59,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .brand-back {
+      display: flex; align-items: center; gap: 0.6rem;
+      text-decoration: none;
+      margin-bottom: 3rem;
+      width: fit-content;
+    }
+    .brand-back svg { transition: transform 0.2s; }
+    .brand-back:hover svg { transform: translateX(-3px); }
+    .brand-back-logo { display: flex; align-items: center; gap: 0.5rem; }
+    .brand-back-logo svg.logo { width: 32px; height: 32px; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold-lt);
+      letter-spacing: 0.02em;
+    }
+
+    .left-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 3vw, 3rem);
+      font-weight: 900;
+      line-height: 1.12;
+      color: var(--page);
+      margin-bottom: 1.25rem;
+    }
+    .left-headline em {
+      font-style: italic;
+      color: var(--gold-lt);
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .left-sub {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: rgba(253,248,240,0.55);
+      max-width: 380px;
+      margin-bottom: 2.5rem;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .feature {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      background: var(--page-dim);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.25s, background 0.25s;
+    }
+    .feature:hover {
+      background: rgba(201,151,59,0.08);
+      border-color: var(--border-hi);
+    }
+    .feature-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .feature-text strong {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--page);
+      margin-bottom: 0.15rem;
+    }
+    .feature-text span {
+      font-size: 0.77rem;
+      color: rgba(253,248,240,0.45);
+      line-height: 1.5;
+    }
+
+    /* ── RIGHT PANEL ── */
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 2rem;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* ── TABS ── */
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      background: rgba(253,248,240,0.05);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 2rem;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: none;
+      background: transparent;
+      color: rgba(253,248,240,0.45);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      letter-spacing: 0.03em;
+    }
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: var(--ink);
+      box-shadow: 0 4px 16px rgba(201,151,59,0.4);
+    }
+
+    /* ── FORMS ── */
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .form-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--page);
+      margin-bottom: 0.4rem;
+    }
+    .form-sub {
+      font-size: 0.82rem;
+      color: rgba(253,248,240,0.45);
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin-bottom: 1rem;
+    }
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(253,248,240,0.5);
+      margin-bottom: 0.4rem;
+    }
+    .field-wrap {
+      position: relative;
+    }
+    .field-icon {
+      position: absolute;
+      left: 0.9rem; top: 50%;
+      transform: translateY(-50%);
+      color: rgba(253,248,240,0.25);
+      pointer-events: none;
+      display: flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .field-input {
+      width: 100%;
+      background: var(--page-dim);
+      border: 1px solid rgba(253,248,240,0.1);
+      color: var(--page);
+      padding: 0.72rem 0.9rem 0.72rem 2.6rem;
+      border-radius: 11px;
+      font-size: 0.88rem;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field-input::placeholder { color: rgba(253,248,240,0.2); }
+    .field-input:focus {
+      border-color: var(--border-hi);
+      box-shadow: 0 0 0 3px rgba(201,151,59,0.14);
+      background: rgba(253,248,240,0.08);
+    }
+    .field-input:focus + .field-focus-bar { transform: scaleX(1); }
+    .field-wrap:focus-within .field-icon { color: var(--gold); }
+
+    .field-toggle {
+      position: absolute;
+      right: 0.9rem; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: rgba(253,248,240,0.3);
+      cursor: pointer;
+      display: flex; align-items: center;
+      padding: 0;
+      transition: color 0.2s;
+    }
+    .field-toggle:hover { color: var(--gold); }
+
+    .field-error {
+      font-size: 0.75rem;
+      color: var(--red);
+      margin-top: 0.35rem;
+      display: none;
+    }
+    .field.has-error .field-input {
+      border-color: rgba(212,96,122,0.5);
+    }
+    .field.has-error .field-error { display: block; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .form-options {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .checkbox-wrap {
+      display: flex; align-items: center; gap: 0.5rem;
+      cursor: pointer;
+    }
+    .checkbox-wrap input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .checkbox-label {
+      font-size: 0.8rem;
+      color: rgba(253,248,240,0.5);
+    }
+    .forgot-link {
+      font-size: 0.8rem;
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .forgot-link:hover { color: var(--gold-lt); text-decoration: underline; }
+
+    /* ── STRENGTH METER ── */
+    .strength-meter {
+      display: flex; gap: 3px; margin-top: 0.4rem;
+    }
+    .strength-bar {
+      flex: 1; height: 3px; border-radius: 99px;
+      background: rgba(253,248,240,0.1);
+      transition: background 0.3s;
+    }
+    .strength-bar.active-1 { background: var(--red); }
+    .strength-bar.active-2 { background: #e8a830; }
+    .strength-bar.active-3 { background: #a0c840; }
+    .strength-bar.active-4 { background: var(--green); }
+    .strength-label {
+      font-size: 0.72rem;
+      color: rgba(253,248,240,0.35);
+      margin-top: 0.3rem;
+      text-align: right;
+    }
+
+    /* ── SUBMIT ── */
+    .btn-auth {
+      width: 100%;
+      padding: 0.85rem 1.5rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      box-shadow: 0 6px 24px rgba(201,151,59,0.45);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(201,151,59,0.6); }
+    .btn-auth:active { transform: scale(0.97); }
+    .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-auth .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(26,16,8,0.3);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .divider-line {
+      flex: 1; height: 1px;
+      background: rgba(253,248,240,0.08);
+    }
+    .divider-text {
+      font-size: 0.75rem;
+      color: rgba(253,248,240,0.3);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SOCIAL BUTTONS ── */
+    .social-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      background: var(--page-dim);
+      border: 1px solid rgba(253,248,240,0.1);
+      color: rgba(253,248,240,0.7);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-social:hover {
+      background: rgba(253,248,240,0.08);
+      border-color: rgba(253,248,240,0.2);
+      color: var(--page);
+    }
+    .btn-social svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* ── SWITCH PROMPT ── */
+    .switch-prompt {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.82rem;
+      color: rgba(253,248,240,0.4);
+    }
+    .switch-prompt button {
+      background: none; border: none;
+      color: var(--gold);
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 0;
+    }
+    .switch-prompt button:hover { color: var(--gold-lt); text-decoration: underline; }
+
+    /* ── TERMS NOTE ── */
+    .terms-note {
+      font-size: 0.72rem;
+      color: rgba(253,248,240,0.25);
+      text-align: center;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+    .terms-note a { color: rgba(201,151,59,0.7); text-decoration: none; }
+    .terms-note a:hover { color: var(--gold); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--ink-soft);
+      border: 1px solid var(--border);
+      color: var(--page);
+      padding: 0.7rem 1.4rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      z-index: 9999;
+      white-space: nowrap;
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(96,192,96,0.4); }
+    .toast.error   { border-color: rgba(212,96,122,0.4); }
+
+    /* ── SUCCESS STATE ── */
+    .success-view {
+      display: none;
+      text-align: center;
+      padding: 2rem 0;
+    }
+    .success-view.show { display: block; }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 32px rgba(201,151,59,0.5);
+      animation: pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes pop-in {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--page);
+      margin-bottom: 0.5rem;
+    }
+    .success-sub {
+      font-size: 0.85rem;
+      color: rgba(253,248,240,0.5);
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
+    }
+    .btn-goto {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.75rem 1.75rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none; border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 6px 24px rgba(201,151,59,0.45);
+      transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .btn-goto:hover { transform: scale(1.04); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .page { grid-template-columns: 1fr; }
+      .panel-left { display: none; }
+      .panel-right { padding: 2rem 1.25rem; justify-content: flex-start; padding-top: 3rem; }
+      .auth-box { max-width: 100%; }
+      .mobile-brand {
+        display: flex; align-items: center; gap: 0.6rem;
+        margin-bottom: 2rem;
+      }
+    }
+    .mobile-brand { display: none; }
+
+    /* ── ANIMATE IN ── */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .panel-left > * { animation: fadeSlideUp 0.6s ease both; }
+    .panel-left > *:nth-child(2) { animation-delay: 0.05s; }
+    .panel-left > *:nth-child(3) { animation-delay: 0.1s; }
+    .panel-left > *:nth-child(4) { animation-delay: 0.15s; }
+    .panel-left > *:nth-child(5) { animation-delay: 0.2s; }
+    .auth-box { animation: fadeSlideUp 0.5s 0.1s ease both; }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="grid-texture"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="page">
+
+  <!-- ══════ LEFT PANEL ══════ -->
+  <div class="panel-left">
+
+    <a href="index.html" class="brand-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,59,0.6)" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <div class="brand-back-logo">
+        <svg class="logo" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="lg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f0c96a"/><stop offset="100%" stop-color="#c9973b"/></linearGradient></defs>
+          <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#lg)" opacity="0.9"/>
+          <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#lg)" opacity="0.25"/>
+          <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#lg)" stroke-width="1.5"/>
+          <line x1="13" y1="12" x2="28" y2="12" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+          <line x1="13" y1="17" x2="26" y2="17" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <line x1="13" y1="22" x2="24" y2="22" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+          <circle cx="28" cy="10" r="3" fill="#f0c96a"/>
+          <text x="28" y="11.5" text-anchor="middle" font-size="4" fill="#1a1008" font-weight="bold">✦</text>
+        </svg>
+        <span class="brand-name">BindCraft</span>
+      </div>
+    </a>
+
+    <h2 class="left-headline">Create books<br/>that last <em>forever.</em></h2>
+
+    <p class="left-sub">
+      Join 12,000+ creators who turn memories into hand-bound masterpieces. Sign up to track orders, save designs, and unlock exclusive styles.
+    </p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">📦</div>
+        <div class="feature-text">
+          <strong>Real-Time Order Tracking</strong>
+          <span>Watch your book go from design to doorstep with live status updates.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-text">
+          <strong>Saved Design Library</strong>
+          <span>Your customisations auto-saved — pick up right where you left off.</span>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✦</div>
+        <div class="feature-text">
+          <strong>Member Exclusives</strong>
+          <span>Early access to limited print runs and seasonal paper collections.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ RIGHT PANEL ══════ -->
+  <div class="panel-right">
+
+    <div class="auth-box">
+
+      <!-- Mobile brand (hidden on desktop) -->
+      <div class="mobile-brand">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+          <defs><linearGradient id="lgm" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f0c96a"/><stop offset="100%" stop-color="#c9973b"/></linearGradient></defs>
+          <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#lgm)" opacity="0.9"/>
+          <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#lgm)" opacity="0.25"/>
+          <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#lgm)" stroke-width="1.5"/>
+        </svg>
+        <span class="brand-name">BindCraft</span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignIn" onclick="switchTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tabSignUp" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <!-- ── SIGN IN FORM ── -->
+      <div class="auth-form active" id="formSignIn">
+        <div class="form-heading">Welcome back</div>
+        <div class="form-sub">Sign in to your BindCraft account to continue crafting.</div>
+
+        <div class="field" id="f-si-email">
+          <label class="field-label" for="si-email">Email Address</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            </span>
+            <input class="field-input" type="email" id="si-email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="field-error" id="si-email-err">Please enter a valid email address.</div>
+        </div>
+
+        <div class="field" id="f-si-pass">
+          <label class="field-label" for="si-pass">Password</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input" type="password" id="si-pass" placeholder="Your password" autocomplete="current-password"/>
+            <button class="field-toggle" type="button" onclick="togglePwd('si-pass', this)" aria-label="Toggle password">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-error" id="si-pass-err">Password required.</div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="si-remember"/>
+            <span class="checkbox-label">Remember me</span>
+          </label>
+          <a href="#" class="forgot-link" onclick="showForgot(event)">Forgot password?</a>
+        </div>
+
+        <button class="btn-auth" id="btnSignIn" onclick="handleSignIn()">
+          <span>Sign In</span>
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">OR CONTINUE WITH</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="social-btns">
+          <button class="btn-social" onclick="socialAuth('google')">
+            <svg viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button class="btn-social" onclick="socialAuth('facebook')">
+            <svg viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            Facebook
+          </button>
+        </div>
+
+        <div class="switch-prompt">
+          Don't have an account? <button onclick="switchTab('signup')">Create one free →</button>
+        </div>
+      </div>
+
+      <!-- ── SIGN UP FORM ── -->
+      <div class="auth-form" id="formSignUp">
+        <div class="form-heading">Start creating</div>
+        <div class="form-sub">Your free account takes 30 seconds. No card needed.</div>
+
+        <div class="row-2">
+          <div class="field" id="f-su-fname">
+            <label class="field-label" for="su-fname">First Name</label>
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input class="field-input" type="text" id="su-fname" placeholder="Jane" autocomplete="given-name"/>
+            </div>
+            <div class="field-error" id="su-fname-err">First name required.</div>
+          </div>
+          <div class="field" id="f-su-lname">
+            <label class="field-label" for="su-lname">Last Name</label>
+            <div class="field-wrap">
+              <span class="field-icon">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input class="field-input" type="text" id="su-lname" placeholder="Smith" autocomplete="family-name"/>
+            </div>
+            <div class="field-error" id="su-lname-err">Last name required.</div>
+          </div>
+        </div>
+
+        <div class="field" id="f-su-email">
+          <label class="field-label" for="su-email">Email Address</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            </span>
+            <input class="field-input" type="email" id="su-email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="field-error" id="su-email-err">Please enter a valid email.</div>
+        </div>
+
+        <div class="field" id="f-su-pass">
+          <label class="field-label" for="su-pass">Password</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input" type="password" id="su-pass" placeholder="Create a password" oninput="checkStrength(this.value)" autocomplete="new-password"/>
+            <button class="field-toggle" type="button" onclick="togglePwd('su-pass', this)" aria-label="Toggle password">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="strength-meter">
+            <div class="strength-bar" id="sb1"></div>
+            <div class="strength-bar" id="sb2"></div>
+            <div class="strength-bar" id="sb3"></div>
+            <div class="strength-bar" id="sb4"></div>
+          </div>
+          <div class="strength-label" id="strength-label">At least 8 characters</div>
+          <div class="field-error" id="su-pass-err">Password must be at least 8 characters.</div>
+        </div>
+
+        <div class="field" id="f-su-confirm">
+          <label class="field-label" for="su-confirm">Confirm Password</label>
+          <div class="field-wrap">
+            <span class="field-icon">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input class="field-input" type="password" id="su-confirm" placeholder="Repeat password" autocomplete="new-password"/>
+          </div>
+          <div class="field-error" id="su-confirm-err">Passwords don't match.</div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="su-terms"/>
+            <span class="checkbox-label">I agree to the <a href="#" style="color:var(--gold)">Terms &amp; Privacy Policy</a></span>
+          </label>
+        </div>
+
+        <button class="btn-auth" id="btnSignUp" onclick="handleSignUp()">
+          <span>Create My Account</span>
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">OR CONTINUE WITH</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="social-btns">
+          <button class="btn-social" onclick="socialAuth('google')">
+            <svg viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Google
+          </button>
+          <button class="btn-social" onclick="socialAuth('facebook')">
+            <svg viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            Facebook
+          </button>
+        </div>
+
+        <div class="switch-prompt">
+          Already have an account? <button onclick="switchTab('signin')">Sign in →</button>
+        </div>
+
+        <p class="terms-note">By creating an account you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. We'll never share your data.</p>
+      </div>
+
+      <!-- ── SUCCESS VIEW ── -->
+      <div class="success-view" id="successView">
+        <div class="success-icon">✦</div>
+        <div class="success-title">You're in!</div>
+        <div class="success-sub" id="successMsg">
+          Welcome to BindCraft. Your account is ready.<br/>Let's start crafting something beautiful.
+        </div>
+        <a href="index.html#order" class="btn-goto">
+          Start Designing
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── CANVAS PARTICLE BG ── */
+  (function() {
+    var c = document.getElementById('bgCanvas');
+    var ctx = c.getContext('2d');
+    var particles = [];
+
+    function resize() {
+      c.width  = window.innerWidth;
+      c.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (var i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        r: Math.random() * 1.5 + 0.3,
+        ox: Math.random() * window.innerWidth,
+        oy: Math.random() * window.innerHeight,
+        speed: Math.random() * 0.4 + 0.1,
+        angle: Math.random() * Math.PI * 2,
+        drift: (Math.random() - 0.5) * 0.02,
+        alpha: Math.random() * 0.4 + 0.1,
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, c.width, c.height);
+      particles.forEach(function(p) {
+        p.angle += p.drift;
+        p.x = p.ox + Math.cos(p.angle) * 40;
+        p.y = p.oy + Math.sin(p.angle) * 40;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(201,151,59,' + p.alpha + ')';
+        ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  /* ── API CONFIG ── */
+  var API = 'http://localhost:3001/api';
+
+  /* ── HELPERS ── */
+  function toast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || '') + ' show';
+    setTimeout(function() { t.classList.remove('show'); }, 3500);
+  }
+
+  function setLoading(btn, on) {
+    if (on) {
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div><span>Please wait…</span>';
+    } else {
+      btn.disabled = false;
+    }
+  }
+
+  function fieldError(fieldId, errId, show) {
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if (f) f.parentElement.parentElement.classList.toggle('has-error', show);
+    return show;
+  }
+
+  /* ── TAB SWITCHER ── */
+  function switchTab(tab) {
+    var signin = document.getElementById('tabSignIn');
+    var signup = document.getElementById('tabSignUp');
+    var fsi    = document.getElementById('formSignIn');
+    var fsu    = document.getElementById('formSignUp');
+
+    if (tab === 'signin') {
+      signin.classList.add('active');
+      signup.classList.remove('active');
+      fsi.classList.add('active');
+      fsu.classList.remove('active');
+    } else {
+      signup.classList.add('active');
+      signin.classList.remove('active');
+      fsu.classList.add('active');
+      fsi.classList.remove('active');
+    }
+  }
+
+  /* ── PASSWORD TOGGLE ── */
+  function togglePwd(inputId, btn) {
+    var inp = document.getElementById(inputId);
+    var isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    btn.innerHTML = isText
+      ? '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+      : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  }
+
+  /* ── STRENGTH METER ── */
+  function checkStrength(val) {
+    var bars   = [document.getElementById('sb1'), document.getElementById('sb2'), document.getElementById('sb3'), document.getElementById('sb4')];
+    var label  = document.getElementById('strength-label');
+    var score  = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    var labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong'];
+    label.textContent = val.length ? labels[score] : 'At least 8 characters';
+
+    bars.forEach(function(b, i) {
+      b.className = 'strength-bar';
+      if (val.length && i < score) b.classList.add('active-' + score);
+    });
+  }
+
+  /* ── FORGOT PASSWORD ── */
+  function showForgot(e) {
+    e.preventDefault();
+    var email = document.getElementById('si-email').value.trim();
+    if (!email) { toast('Enter your email first, then click Forgot Password.', 'error'); return; }
+    toast('📧 Password reset link sent to ' + email, 'success');
+  }
+
+  /* ── SHOW SUCCESS ── */
+  function showSuccess(name, isNew) {
+    document.getElementById('formSignIn').classList.remove('active');
+    document.getElementById('formSignUp').classList.remove('active');
+    document.querySelector('.auth-tabs').style.display = 'none';
+    var sv = document.getElementById('successView');
+    sv.classList.add('show');
+    document.getElementById('successMsg').innerHTML = isNew
+      ? 'Welcome, <strong>' + name + '</strong>! Your BindCraft account is ready.<br/>Let\'s craft something extraordinary.'
+      : 'Welcome back, <strong>' + name + '</strong>!<br/>Ready to continue creating?';
+  }
+
+  /* ── SIGN IN ── */
+  function handleSignIn() {
+    var email = document.getElementById('si-email').value.trim();
+    var pass  = document.getElementById('si-pass').value;
+    var ok    = true;
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldError('si-email', 'si-email-err', true); ok = false;
+    } else { fieldError('si-email', 'si-email-err', false); }
+
+    if (!pass) {
+      fieldError('si-pass', 'si-pass-err', true); ok = false;
+    } else { fieldError('si-pass', 'si-pass-err', false); }
+
+    if (!ok) return;
+
+    var btn = document.getElementById('btnSignIn');
+    var orig = btn.innerHTML;
+    setLoading(btn, true);
+
+    fetch(API + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: pass })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success) throw new Error(res.error || 'Invalid credentials.');
+      localStorage.setItem('bc_token', res.token);
+      localStorage.setItem('bc_user', JSON.stringify(res.user));
+      showSuccess(res.user.firstName, false);
+    })
+    .catch(function(e) {
+      btn.innerHTML = orig;
+      btn.disabled  = false;
+      toast('❌ ' + e.message, 'error');
+    });
+  }
+
+  /* ── SIGN UP ── */
+  function handleSignUp() {
+    var fname   = document.getElementById('su-fname').value.trim();
+    var lname   = document.getElementById('su-lname').value.trim();
+    var email   = document.getElementById('su-email').value.trim();
+    var pass    = document.getElementById('su-pass').value;
+    var confirm = document.getElementById('su-confirm').value;
+    var terms   = document.getElementById('su-terms').checked;
+    var ok      = true;
+
+    if (!fname) { fieldError('su-fname', 'su-fname-err', true); ok = false; }
+    else fieldError('su-fname', 'su-fname-err', false);
+
+    if (!lname) { fieldError('su-lname', 'su-lname-err', true); ok = false; }
+    else fieldError('su-lname', 'su-lname-err', false);
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldError('su-email', 'su-email-err', true); ok = false;
+    } else fieldError('su-email', 'su-email-err', false);
+
+    if (!pass || pass.length < 8) {
+      document.getElementById('f-su-pass').classList.add('has-error'); ok = false;
+    } else document.getElementById('f-su-pass').classList.remove('has-error');
+
+    if (pass !== confirm) {
+      document.getElementById('f-su-confirm').classList.add('has-error'); ok = false;
+    } else document.getElementById('f-su-confirm').classList.remove('has-error');
+
+    if (!terms) { toast('Please agree to the Terms & Privacy Policy.', 'error'); ok = false; }
+
+    if (!ok) return;
+
+    var btn  = document.getElementById('btnSignUp');
+    var orig = btn.innerHTML;
+    setLoading(btn, true);
+
+    fetch(API + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName: fname, lastName: lname, email: email, password: pass })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (!res.success) throw new Error(res.error || 'Registration failed.');
+      localStorage.setItem('bc_token', res.token);
+      localStorage.setItem('bc_user', JSON.stringify(res.user));
+      showSuccess(fname, true);
+    })
+    .catch(function(e) {
+      btn.innerHTML = orig;
+      btn.disabled  = false;
+      toast('❌ ' + e.message, 'error');
+    });
+  }
+
+  /* ── SOCIAL AUTH (placeholder) ── */
+  function socialAuth(provider) {
+    toast('🔗 ' + provider.charAt(0).toUpperCase() + provider.slice(1) + ' OAuth — configure in server.js', 'error');
+  }
+
+  /* ── ENTER KEY SUPPORT ── */
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var si = document.getElementById('formSignIn');
+    var su = document.getElementById('formSignUp');
+    if (si && si.classList.contains('active')) handleSignIn();
+    else if (su && su.classList.contains('active')) handleSignUp();
+  });
+
+  /* ── AUTO-OPEN TAB FROM URL PARAM ── */
+  var urlTab = new URLSearchParams(window.location.search).get('tab');
+  if (urlTab === 'signup') switchTab('signup');
+</script>
+</body>
+</html>

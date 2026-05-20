@@ -1,0 +1,77 @@
+{
+  "users": [
+    {
+      "id": "1a384e88181c685e",
+      "firstName": "Siddharth",
+      "lastName": "Fattta",
+      "email": "siddharthfattta@gmail.com",
+      "password": "f6c35f2186f73360e568372df809467e:005f4a8638d08d240224ff8c1aef8849754a08f6f751267a8d62c83702eea7ef46e7fa316e59a703f50c169a3612cd6b061c8953f6a1ceb6f974882a54005809",
+      "role": "customer",
+      "createdAt": "2026-05-19T06:29:34.938Z",
+      "lastLogin": "2026-05-19T08:41:48.795Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "f94c775236edbc85",
+      "name": "hvvjvvv",
+      "email": "siddharthfattta@gmail.com",
+      "bookType": "journal",
+      "cover": "hardcover",
+      "pageColor": "cream",
+      "size": "a4",
+      "pageCount": 40,
+      "notes": "vbjhhvvbhjvbj",
+      "status": "received",
+      "createdAt": "2026-05-19T06:29:12.904Z"
+    },
+    {
+      "id": "ff977de4da96a480",
+      "name": "cxlzklnvlknvlcs",
+      "email": "siddharthfattta@gmail.com",
+      "bookType": "album",
+      "cover": "hardcover",
+      "pageColor": "cream",
+      "size": "a4",
+      "pageCount": 40,
+      "notes": "cvcvsdmvnksdvnksd",
+      "status": "received",
+      "createdAt": "2026-05-19T06:45:29.887Z"
+    },
+    {
+      "id": "8da92e5278c296a2",
+      "name": "jfosdjvos",
+      "email": "siddharthfattta@gmail.com",
+      "bookType": "album",
+      "cover": "hardcover",
+      "pageColor": "cream",
+      "size": "a4",
+      "pageCount": 40,
+      "notes": "svfdbfdbfdbfdbdf",
+      "status": "received",
+      "createdAt": "2026-05-19T07:13:45.865Z"
+    },
+    {
+      "id": "46d8632fc147ad02",
+      "name": "gdffdbdf",
+      "email": "siddharthfattta@gmail.com",
+      "bookType": "photo",
+      "cover": "hardcover",
+      "pageColor": "white",
+      "size": "a4",
+      "pageCount": 40,
+      "notes": "brddfbdgbndg",
+      "status": "received",
+      "createdAt": "2026-05-19T08:09:24.464Z"
+    }
+  ],
+  "reservations": [],
+  "contacts": [],
+  "reviews": [],
+  "revokedTokens": [
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYTM4NGU4ODE4MWM2ODVlIiwiZW1haWwiOiJzaWRkaGFydGhmYXR0dGFAZ21haWwuY29tIiwicm9sZSI6ImN1c3RvbWVyIiwiZmlyc3ROYW1lIjoiU2lkZGhhcnRoIiwiZXhwIjoxNzc5Nzc2OTc0LCJpYXQiOjE3NzkxNzIxNzR9.sVMPPrlJsTIsCe9Vtr7ZWp986mPcjL3AD285BChPt-E",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYTM4NGU4ODE4MWM2ODVlIiwiZW1haWwiOiJzaWRkaGFydGhmYXR0dGFAZ21haWwuY29tIiwicm9sZSI6ImN1c3RvbWVyIiwiZmlyc3ROYW1lIjoiU2lkZGhhcnRoIiwiZXhwIjoxNzc5Nzc4MDM5LCJpYXQiOjE3NzkxNzMyMzl9.pECx4TAKrGtG5ISU6xUo_8gRCvkx2Rz9Wh6UojC-g-o",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYTM4NGU4ODE4MWM2ODVlIiwiZW1haWwiOiJzaWRkaGFydGhmYXR0dGFAZ21haWwuY29tIiwicm9sZSI6ImN1c3RvbWVyIiwiZmlyc3ROYW1lIjoiU2lkZGhhcnRoIiwiZXhwIjoxNzc5Nzg0OTA4LCJpYXQiOjE3NzkxODAxMDh9.9Iurq0XCZ5pU7z7hpOnoF7MZ5Ea6MI_THbPWkFcdQ3g"
+  ],
+  "payments": []
+}

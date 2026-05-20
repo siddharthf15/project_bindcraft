@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BindCraft – Custom Book Studio</title>
+  <link rel="stylesheet" href="project.css" />
+  <link rel="stylesheet" href="chatbot.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+
+  <!-- ── PAGE LOADER ── -->
+  <div id="bc-loader">
+    <div class="bc-loader-inner">
+      <svg class="bc-loader-logo" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="loaderGold" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f0c96a"/>
+            <stop offset="100%" stop-color="#c9973b"/>
+          </linearGradient>
+        </defs>
+        <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#loaderGold)" opacity="0.9"/>
+        <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#loaderGold)" opacity="0.25"/>
+        <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#loaderGold)" stroke-width="1.5"/>
+        <line x1="13" y1="12" x2="28" y2="12" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+        <line x1="13" y1="17" x2="26" y2="17" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        <line x1="13" y1="22" x2="24" y2="22" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+        <circle cx="28" cy="10" r="3" fill="#f0c96a"/>
+        <text x="28" y="11.5" text-anchor="middle" font-size="4" fill="#1a1008" font-weight="bold">✦</text>
+      </svg>
+      <span class="bc-loader-text">BindCraft</span>
+      <div class="bc-loader-bar"><div class="bc-loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Particle Background -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- ── NAV ── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <!-- NEW SVG LOGO -->
+      <svg class="brand-logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGold" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f0c96a"/>
+            <stop offset="100%" stop-color="#c9973b"/>
+          </linearGradient>
+        </defs>
+        <!-- Book spine -->
+        <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#logoGold)" opacity="0.9"/>
+        <!-- Book cover -->
+        <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#logoGold)" opacity="0.25"/>
+        <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#logoGold)" stroke-width="1.5"/>
+        <!-- Page lines (animated) -->
+        <g class="book-pages-anim">
+          <line x1="13" y1="12" x2="28" y2="12" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+          <line x1="13" y1="17" x2="26" y2="17" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          <line x1="13" y1="22" x2="24" y2="22" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+        </g>
+        <!-- Gold star accent -->
+        <circle cx="28" cy="10" r="3" fill="#f0c96a"/>
+        <text x="28" y="11.5" text-anchor="middle" font-size="4" fill="#1a1008" font-weight="bold">✦</text>
+      </svg>
+      <span class="brand-text">BindCraft</span>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="nav-link">Home</a></li>
+      <li><a href="#about" class="nav-link">About</a></li>
+      <li><a href="#designs" class="nav-link">Designs</a></li>
+      <li><a href="#order" class="nav-link">Order</a></li>
+      <li><a href="#reviews" class="nav-link">Reviews</a></li>
+      <li><a href="#reservation" class="nav-link">Reserve</a></li>
+      <li><a href="#contact" class="nav-link">Contact</a></li>
+      <li><a href="#order" class="nav-cta">Start Creating</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── MARQUEE TICKER ── -->
+  <div class="hero-marquee-wrap" aria-hidden="true">
+    <div class="hero-marquee-track">
+      <span>✦ Photo Books</span><span class="mq-dot">◆</span>
+      <span>Wedding Albums</span><span class="mq-dot">◆</span>
+      <span>Custom Journals</span><span class="mq-dot">◆</span>
+      <span>Corporate Editions</span><span class="mq-dot">◆</span>
+      <span>Archival Inks</span><span class="mq-dot">◆</span>
+      <span>Hand-Bound Covers</span><span class="mq-dot">◆</span>
+      <span>200-Year Guarantee</span><span class="mq-dot">◆</span>
+      <span>50+ Paper Stocks</span><span class="mq-dot">◆</span>
+      <!-- duplicate for seamless loop -->
+      <span>✦ Photo Books</span><span class="mq-dot">◆</span>
+      <span>Wedding Albums</span><span class="mq-dot">◆</span>
+      <span>Custom Journals</span><span class="mq-dot">◆</span>
+      <span>Corporate Editions</span><span class="mq-dot">◆</span>
+      <span>Archival Inks</span><span class="mq-dot">◆</span>
+      <span>Hand-Bound Covers</span><span class="mq-dot">◆</span>
+      <span>200-Year Guarantee</span><span class="mq-dot">◆</span>
+      <span>50+ Paper Stocks</span><span class="mq-dot">◆</span>
+    </div>
+  </div>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="home">
+    <!-- Background grid texture -->
+    <div class="hero-grid-texture" aria-hidden="true"></div>
+
+    <div class="hero-bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Floating sparkles -->
+    <div class="hero-sparkles" aria-hidden="true">
+      <span class="sparkle s1">✦</span>
+      <span class="sparkle s2">◆</span>
+      <span class="sparkle s3">✦</span>
+      <span class="sparkle s4">✧</span>
+      <span class="sparkle s5">◆</span>
+      <span class="sparkle s6">✦</span>
+    </div>
+
+    <div class="hero-content">
+      <!-- Pill badge -->
+      <div class="hero-tag animate-in">
+        <span class="hero-tag-dot"></span>
+        ✦ Premium Custom Books — Crafted Since 2009
+      </div>
+
+      <h1 class="hero-title animate-in delay-1">
+        Your Story,<br/>
+        <em>Your</em> Masterpiece
+      </h1>
+
+      <p class="hero-subtitle animate-in delay-2">
+        Handcrafted photo books, journals & albums — printed with archival inks on premium paper, bound with love.
+      </p>
+
+      <div class="hero-buttons animate-in delay-3">
+        <a href="#order" class="btn-primary">
+          <span>Design Your Book</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#designs" class="btn-ghost">See Gallery</a>
+      </div>
+
+      <!-- Social proof avatars -->
+      <div class="hero-trust animate-in delay-4">
+        <div class="trust-avatars">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&q=80" alt=""/>
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&q=80" alt=""/>
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&q=80" alt=""/>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&q=80" alt=""/>
+          <span class="trust-more">+12k</span>
+        </div>
+        <div class="trust-text">
+          <div class="trust-stars">★★★★★</div>
+          <span>Loved by <strong>12,000+</strong> customers</span>
+        </div>
+      </div>
+
+      <div class="hero-stats animate-in delay-4">
+        <div class="stat">
+          <span class="stat-num" data-target="12000">0</span>
+          <span class="stat-label">Books Made</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-target="98">0</span>
+          <span class="stat-label">% Satisfaction</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" data-target="47">0</span>
+          <span class="stat-label">Design Styles</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual side -->
+    <div class="hero-visual animate-in delay-2">
+      <!-- Rotating ring behind book -->
+      <div class="book-ring" aria-hidden="true"></div>
+
+      <!-- Floating feature badges -->
+      <div class="book-badge book-badge-1">
+        <span>📦</span> Free Gift Wrap
+      </div>
+      <div class="book-badge book-badge-2">
+        <span>⚡</span> 5-Day Delivery
+      </div>
+      <div class="book-badge book-badge-3">
+        <span>🎨</span> 50+ Styles
+      </div>
+      <div class="book-badge book-badge-4">
+        <span>♻️</span> Eco Inks
+      </div>
+
+      <div class="book-3d">
+        <div class="book-cover">
+          <div class="book-spine"></div>
+          <div class="book-face">
+            <div class="book-img-wrap">
+              <img
+                src="https://images.stockcake.com/public/8/5/f/85f1719a-78e6-4f8b-b312-0cc8c7490553_large/sunny-reading-nook-stockcake.jpg"
+                alt="Beautiful golden library with warm amber light"
+                loading="eager"
+              />
+            </div>
+            <div class="book-title-overlay">
+              <p>Our Story</p>
+              <small>2026 Edition</small>
+            </div>
+          </div>
+          <div class="book-pages"></div>
+        </div>
+        <div class="book-shadow"></div>
+      </div>
+
+      <!-- Circular text ring -->
+      <svg class="book-ring-text" viewBox="0 0 200 200" aria-hidden="true">
+        <defs>
+          <path id="circle-path" d="M 100,100 m -75,0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0"/>
+        </defs>
+        <text font-size="11" fill="rgba(201,151,59,0.5)" letter-spacing="3" font-family="DM Sans, sans-serif">
+          <textPath href="#circle-path">PREMIUM · HANDCRAFTED · ARCHIVAL · CUSTOM ·&nbsp;</textPath>
+        </text>
+      </svg>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT ── -->
+  <section class="about" id="about">
+    <div class="about-bg-orb about-orb-1" aria-hidden="true"></div>
+    <div class="about-bg-orb about-orb-2" aria-hidden="true"></div>
+    <div class="section-container">
+
+      <!-- Top: pull-quote banner -->
+      <div class="about-pull-quote reveal">
+        <div class="apq-line"></div>
+        <blockquote>"A book is proof that humans are capable of working magic."</blockquote>
+        <div class="apq-line"></div>
+      </div>
+
+      <div class="about-grid">
+        <!-- Left: stacked image collage -->
+        <div class="about-images reveal">
+          <div class="about-img-main">
+            <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=700&q=90" alt="Artisan bookbinding" loading="lazy"/>
+            <div class="about-img-caption">Hand-bound at our Old Town atelier</div>
+          </div>
+          <div class="about-img-row">
+            <div class="about-img-sm">
+              <img src="https://images.unsplash.com/photo-1621944190310-e3cca1564bd7?w=400&q=90" alt="Premium paper stocks" loading="lazy"/>
+            </div>
+            <div class="about-img-sm">
+              <img src="https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=400&q=90" alt="Archival colour printing" loading="lazy"/>
+            </div>
+          </div>
+          <!-- Floating stat cards -->
+          <div class="about-stat-float about-stat-1">
+            <span class="asf-num">15+</span>
+            <span class="asf-label">Years of craft</span>
+          </div>
+          <div class="about-stat-float about-stat-2">
+            <span class="asf-num">12k</span>
+            <span class="asf-label">Books created</span>
+          </div>
+        </div>
+
+        <!-- Right: text + timeline -->
+        <div class="about-text reveal delay-1">
+          <div class="section-tag">✦ Our Story</div>
+          <h2 class="section-title">Crafting <em>memories</em>,<br/>one page at a time</h2>
+
+          <p>Founded in 2009, BindCraft began as a small atelier in the heart of the city — binding books by hand for those who believed stories deserved a beautiful home.</p>
+          <p>Today we marry traditional bookbinding artistry with precision digital printing to create books that outlast generations.</p>
+
+          <!-- Mini timeline -->
+          <div class="about-timeline">
+            <div class="atl-item">
+              <div class="atl-year">2009</div>
+              <div class="atl-dot"></div>
+              <div class="atl-desc">First atelier opens, 3 artisans</div>
+            </div>
+            <div class="atl-item">
+              <div class="atl-year">2014</div>
+              <div class="atl-dot"></div>
+              <div class="atl-desc">Archival ink press installed</div>
+            </div>
+            <div class="atl-item">
+              <div class="atl-year">2019</div>
+              <div class="atl-dot"></div>
+              <div class="atl-desc">10,000th book milestone</div>
+            </div>
+            <div class="atl-item">
+              <div class="atl-year">2024</div>
+              <div class="atl-dot atl-dot-active"></div>
+              <div class="atl-desc">Global shipping — 40+ countries</div>
+            </div>
+          </div>
+
+          <div class="about-features">
+            <div class="feature-pill">♻️ Eco-friendly inks</div>
+            <div class="feature-pill">🔒 Archival quality</div>
+            <div class="feature-pill">🎨 50+ paper stocks</div>
+            <div class="feature-pill">🚚 Worldwide shipping</div>
+          </div>
+          <a href="#order" class="btn-primary">Craft My Book
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DESIGNS ── -->
+  <section class="designs" id="designs">
+    <div class="designs-bg-grid" aria-hidden="true"></div>
+    <div class="designs-glow designs-glow-l" aria-hidden="true"></div>
+    <div class="designs-glow designs-glow-r" aria-hidden="true"></div>
+    <div class="section-container">
+      <div class="designs-header reveal">
+        <div class="designs-header-text">
+          <div class="section-tag">✦ Our Collection</div>
+          <h2 class="section-title">Design <em>styles</em> we offer</h2>
+          <p class="section-sub">From intimate journals to grand wedding albums — find the aesthetic that tells your story.</p>
+        </div>
+        <div class="designs-header-count reveal delay-1">
+          <span class="dhc-num">47</span>
+          <span class="dhc-label">unique styles</span>
+        </div>
+      </div>
+      <div class="design-filters reveal">
+        <button class="filter-btn active" data-filter="all">
+          <span class="fb-dot"></span>All Styles
+        </button>
+        <button class="filter-btn" data-filter="photo">
+          <span class="fb-dot"></span>📷 Photo Books
+        </button>
+        <button class="filter-btn" data-filter="journal">
+          <span class="fb-dot"></span>✍️ Journals
+        </button>
+        <button class="filter-btn" data-filter="album">
+          <span class="fb-dot"></span>💍 Albums
+        </button>
+        <button class="filter-btn" data-filter="corporate">
+          <span class="fb-dot"></span>💼 Corporate
+        </button>
+      </div>
+      <div class="designs-grid" id="designsGrid"></div>
+    </div>
+  </section>
+
+  <!-- ── QUALITY ── -->
+  <section class="quality" id="quality">
+    <div class="section-container">
+      <div class="quality-header reveal">
+        <div class="quality-header-left">
+          <div class="section-tag">✦ Our Materials</div>
+          <h2 class="section-title">Quality you can <em>feel</em></h2>
+          <p class="section-sub quality-sub">Every material is chosen obsessively — because a book that lasts 200 years deserves nothing less.</p>
+        </div>
+        <div class="quality-header-right reveal delay-1">
+          <div class="quality-hero-stat">
+            <div class="qhs-ring">
+              <svg viewBox="0 0 80 80" class="qhs-svg">
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(201,151,59,0.15)" stroke-width="6"/>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="url(#qGold)" stroke-width="6"
+                  stroke-dasharray="213.6" stroke-dashoffset="4.3"
+                  stroke-linecap="round" transform="rotate(-90 40 40)"/>
+                <defs>
+                  <linearGradient id="qGold" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#f0c96a"/>
+                    <stop offset="100%" stop-color="#c9973b"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="qhs-center">
+                <span class="qhs-pct">98%</span>
+              </div>
+            </div>
+            <span class="qhs-label">Customer satisfaction<br/>across 12,000+ books</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quality-grid">
+        <div class="quality-card reveal" data-hover="true">
+          <div class="quality-card-top">
+            <div class="quality-icon-wrap quality-icon-print">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <div class="quality-card-meta">
+              <h3>Ultra HD Printing</h3>
+              <span class="quality-spec-pill">2400 DPI</span>
+            </div>
+          </div>
+          <p>Pigment-based archival inks resist fading for 200+ years. Every print is ICC-profiled so screen colours match the final page.</p>
+          <div class="quality-meter">
+            <div class="quality-meter-track">
+              <div class="quality-fill" data-width="98"></div>
+            </div>
+            <span class="quality-label">98% Colour Accuracy</span>
+          </div>
+        </div>
+
+        <div class="quality-card reveal delay-1" data-hover="true">
+          <div class="quality-card-top">
+            <div class="quality-icon-wrap quality-icon-paper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="quality-card-meta">
+              <h3>Premium Paper</h3>
+              <span class="quality-spec-pill">50+ stocks</span>
+            </div>
+          </div>
+          <p>From 80gsm tissue-thin to 350gsm heavyweight — matte, gloss, silk, metallic, recycled. Feel the difference at our studio.</p>
+          <div class="quality-meter">
+            <div class="quality-meter-track">
+              <div class="quality-fill" data-width="95"></div>
+            </div>
+            <span class="quality-label">95% Customer Pick Rate</span>
+          </div>
+        </div>
+
+        <div class="quality-card reveal delay-2" data-hover="true">
+          <div class="quality-card-top">
+            <div class="quality-icon-wrap quality-icon-bind">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+            </div>
+            <div class="quality-card-meta">
+              <h3>Hand-Bound Covers</h3>
+              <span class="quality-spec-pill">Artisan sewn</span>
+            </div>
+          </div>
+          <p>Hardback, softback, linen, leather & vegan leather — every spine hand-sewn by trained artisans for a cover that opens perfectly flat.</p>
+          <div class="quality-meter">
+            <div class="quality-meter-track">
+              <div class="quality-fill" data-width="100"></div>
+            </div>
+            <span class="quality-label">100% Handcrafted Finish</span>
+          </div>
+        </div>
+
+        <div class="quality-card reveal delay-3" data-hover="true">
+          <div class="quality-card-top">
+            <div class="quality-icon-wrap quality-icon-color">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="13.5" cy="6.5" r="0.5"/><circle cx="17.5" cy="10.5" r="0.5"/><circle cx="8.5" cy="7.5" r="0.5"/><circle cx="6.5" cy="12.5" r="0.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 011.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+            </div>
+            <div class="quality-card-meta">
+              <h3>Colour Science</h3>
+              <span class="quality-spec-pill">ICC profiled</span>
+            </div>
+          </div>
+          <p>Soft-proofing on calibrated presses guarantees your screen colours match the final print. What you see is exactly what you get.</p>
+          <div class="quality-meter">
+            <div class="quality-meter-track">
+              <div class="quality-fill" data-width="99"></div>
+            </div>
+            <span class="quality-label">99% Print Match</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paper colour swatch bar -->
+      <div class="paper-palette reveal">
+        <div class="palette-header">
+          <h3>Live page colour preview</h3>
+          <p>Click a swatch to transform the look of the whole website</p>
+        </div>
+        <div class="palette-swatches" id="paletteSwatch"></div>
+        <div class="palette-preview-bar" id="palettePreviewBar"></div>
+        <p class="palette-note" id="paletteNote">Choose your paper colour</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section class="pricing" id="pricing">
+    <div class="pricing-bg-pattern" aria-hidden="true"></div>
+    <div class="section-container">
+      <div class="section-header reveal">
+        <div class="section-tag">✦ Transparent Pricing</div>
+        <h2 class="section-title">Simple, <em>honest</em> pricing</h2>
+        <p class="section-sub">No hidden fees. Every book includes a free digital proof before we print.</p>
+      </div>
+
+      <div class="pricing-toggle-wrap reveal">
+        <div class="pricing-toggle">
+          <button class="ptoggle-btn ptoggle-active" id="ptoggle-soft" onclick="window.switchCover('soft')">
+            Softcover
+          </button>
+          <button class="ptoggle-btn" id="ptoggle-hard" onclick="window.switchCover('hard')">
+            Hardcover
+            <span class="ptoggle-badge">Most popular</span>
+          </button>
+        </div>
+        <div class="pricing-promo-pill">
+          🎁 Use code <strong>FIRSTBOOK</strong> for 10% off your first order
+        </div>
+      </div>
+
+      <div class="pricing-grid" id="pricingGrid"></div>
+
+      <div class="pricing-footer reveal">
+        <div class="pf-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>100% satisfaction guarantee</span>
+        </div>
+        <div class="pf-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Free proof review — we don't print until you're happy</span>
+        </div>
+        <div class="pf-item">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <span>Ships worldwide · free over ₹3,000</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ORDER ── -->
+  <section class="order" id="order">
+    <div class="order-bg-grid" aria-hidden="true"></div>
+    <div class="order-glow" aria-hidden="true"></div>
+    <div class="section-container">
+      <div class="section-header reveal">
+        <div class="section-tag">✦ Order Now</div>
+        <h2 class="section-title">Build your book <em>today</em></h2>
+        <p class="section-sub">Four easy steps — your masterpiece ships in 7–10 days.</p>
+      </div>
+
+      <!-- Progress stepper -->
+      <div class="order-stepper reveal">
+        <div class="step active" data-step="1">
+          <div class="step-num">
+            <span class="step-num-label">1</span>
+            <svg class="step-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>Book Type</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="2">
+          <div class="step-num">
+            <span class="step-num-label">2</span>
+            <svg class="step-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>Customise</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="3">
+          <div class="step-num">
+            <span class="step-num-label">3</span>
+            <svg class="step-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>Photos</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" data-step="4">
+          <div class="step-num">
+            <span class="step-num-label">4</span>
+            <svg class="step-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>Confirm</span>
+        </div>
+      </div>
+
+      <div class="order-panels">
+
+        <!-- Panel 1 — Book type -->
+        <div class="order-panel active" id="panel-1">
+          <div class="panel-header">
+            <h3>Choose your book type</h3>
+            <p class="panel-sub">Select the format that best tells your story</p>
+          </div>
+          <div class="type-cards">
+            <label class="type-card">
+              <input type="radio" name="bookType" value="photo"/>
+              <div class="type-card-inner">
+                <div class="type-card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1511108690759-009324a90311?w=400&q=90" alt="Photo Book" loading="lazy"/>
+                  <div class="type-card-overlay"></div>
+                </div>
+                <div class="type-card-body">
+                  <div class="type-card-icon-badge">📷</div>
+                  <h4>Photo Book</h4>
+                  <p>Lay-flat pages, vivid archival prints</p>
+                  <div class="type-card-from">from ₹1,499</div>
+                </div>
+                <div class="type-card-check">✓</div>
+              </div>
+            </label>
+            <label class="type-card">
+              <input type="radio" name="bookType" value="journal"/>
+              <div class="type-card-inner">
+                <div class="type-card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&q=90" alt="Journal" loading="lazy"/>
+                  <div class="type-card-overlay"></div>
+                </div>
+                <div class="type-card-body">
+                  <div class="type-card-icon-badge">✍️</div>
+                  <h4>Journal</h4>
+                  <p>Lined, dot-grid or blank pages</p>
+                  <div class="type-card-from">from ₹999</div>
+                </div>
+                <div class="type-card-check">✓</div>
+              </div>
+            </label>
+            <label class="type-card">
+              <input type="radio" name="bookType" value="album"/>
+              <div class="type-card-inner">
+                <div class="type-card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=90" alt="Wedding Album" loading="lazy"/>
+                  <div class="type-card-overlay"></div>
+                </div>
+                <div class="type-card-body">
+                  <div class="type-card-icon-badge">💍</div>
+                  <h4>Wedding Album</h4>
+                  <p>Heirloom quality leather finish</p>
+                  <div class="type-card-from">from ₹2,999</div>
+                </div>
+                <div class="type-card-check">✓</div>
+              </div>
+            </label>
+            <label class="type-card">
+              <input type="radio" name="bookType" value="corporate"/>
+              <div class="type-card-inner">
+                <div class="type-card-img-wrap">
+                  <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=90" alt="Corporate Book" loading="lazy"/>
+                  <div class="type-card-overlay"></div>
+                </div>
+                <div class="type-card-body">
+                  <div class="type-card-icon-badge">💼</div>
+                  <h4>Corporate Book</h4>
+                  <p>Brand-perfect presentations</p>
+                  <div class="type-card-from">from ₹2,099</div>
+                </div>
+                <div class="type-card-check">✓</div>
+              </div>
+            </label>
+          </div>
+          <div class="order-trust-strip">
+            <div class="ots-item">🏆 200-year archival guarantee</div>
+            <div class="ots-item">🎨 Free digital proof review</div>
+            <div class="ots-item">📦 Free gift wrap included</div>
+          </div>
+          <div class="panel-nav">
+            <button class="btn-primary next-step" data-next="2">Next: Customise <span>→</span></button>
+          </div>
+        </div>
+
+        <!-- Panel 2 — Customise -->
+        <div class="order-panel" id="panel-2">
+          <div class="panel-header">
+            <h3>Customise your book</h3>
+            <p class="panel-sub">Every choice affects the final look and feel</p>
+          </div>
+          <div class="customize-grid">
+            <div class="custom-group">
+              <label class="custom-group-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                Cover Type
+              </label>
+              <div class="custom-options" id="coverOptions">
+                <button class="custom-opt active" data-val="hardcover">Hardcover</button>
+                <button class="custom-opt" data-val="softcover">Softcover</button>
+                <button class="custom-opt" data-val="linen">Linen</button>
+                <button class="custom-opt" data-val="leather">Leather</button>
+              </div>
+            </div>
+            <div class="custom-group">
+              <label class="custom-group-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>
+                Page Colour
+              </label>
+              <div class="custom-options" id="pageColorOptions">
+                <button class="custom-opt swatch-opt active" data-val="white" style="background:#fff; --swatch-bg:#fff;" title="White"></button>
+                <button class="custom-opt swatch-opt" data-val="cream" style="background:#fdf6e3; --swatch-bg:#fdf6e3;" title="Cream"></button>
+                <button class="custom-opt swatch-opt" data-val="grey" style="background:#e8e8e8; --swatch-bg:#e8e8e8;" title="Grey"></button>
+                <button class="custom-opt swatch-opt" data-val="blush" style="background:#fde8e8; --swatch-bg:#fde8e8;" title="Blush"></button>
+              </div>
+            </div>
+            <div class="custom-group">
+              <label class="custom-group-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Size
+              </label>
+              <div class="custom-options" id="sizeOptions">
+                <button class="custom-opt active" data-val="a4">A4 (21×30)</button>
+                <button class="custom-opt" data-val="square">Square (30×30)</button>
+                <button class="custom-opt" data-val="a5">A5 (15×21)</button>
+                <button class="custom-opt" data-val="panoramic">Panoramic (30×15)</button>
+              </div>
+            </div>
+            <div class="custom-group">
+              <label class="custom-group-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Pages: <span id="pageCount" class="page-count-display">40</span>
+              </label>
+              <input type="range" class="range-slider" id="pageSlider" min="20" max="200" step="10" value="40"/>
+              <div class="page-slider-hints">
+                <span>20 pages</span>
+                <span>200 pages</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel-nav">
+            <button class="btn-ghost prev-step" data-prev="1">← Back</button>
+            <button class="btn-primary next-step" data-next="3">Next: Photos <span>→</span></button>
+          </div>
+        </div>
+
+        <!-- Panel 3 — Photos -->
+        <div class="order-panel" id="panel-3">
+          <div class="panel-header">
+            <h3>Upload your photos</h3>
+            <p class="panel-sub">High-res images print beautifully — JPG, PNG or HEIC up to 50 MB each</p>
+          </div>
+          <div class="upload-area" id="uploadArea">
+            <div class="upload-icon-wrap">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <p class="upload-title">Drop photos here</p>
+            <p class="upload-hint">or click to browse your device</p>
+            <input type="file" id="fileInput" accept="image/*" multiple hidden/>
+            <button class="upload-browse-btn" onclick="document.getElementById('fileInput').click()">
+              Browse Files
+            </button>
+          </div>
+          <div class="upload-preview" id="uploadPreview"></div>
+          <div class="panel-nav">
+            <button class="btn-ghost prev-step" data-prev="2">← Back</button>
+            <button class="btn-primary next-step" data-next="4">Next: Confirm <span>→</span></button>
+          </div>
+        </div>
+
+        <!-- Panel 4 — Confirm -->
+        <div class="order-panel" id="panel-4">
+          <div class="panel-header">
+            <h3>Confirm your order</h3>
+            <p class="panel-sub">Review your choices and add your details</p>
+          </div>
+          <div class="confirm-summary" id="confirmSummary"></div>
+          <div class="confirm-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" placeholder="Jane Smith" class="form-input"/>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="jane@email.com" class="form-input"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Special Instructions <span style="font-size:0.75rem;font-weight:400;opacity:0.5;">optional</span></label>
+              <textarea placeholder="Dedication text, cover engraving, gift message…" class="form-input" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="panel-nav">
+            <button class="btn-ghost prev-step" data-prev="3">← Back</button>
+            <button class="btn-primary" id="placeOrderBtn">
+              <span>Place Order</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── REVIEWS ── -->
+  <section class="reviews" id="reviews">
+    <!-- Floating decorative orbs -->
+    <div class="reviews-orb reviews-orb-1" aria-hidden="true"></div>
+    <div class="reviews-orb reviews-orb-2" aria-hidden="true"></div>
+
+    <div class="section-container reviews-container">
+      <!-- Header with trust stats -->
+      <div class="reviews-header reveal">
+        <div class="reviews-header-left">
+          <div class="section-tag">✦ Verified Reviews</div>
+          <h2 class="section-title">Stories from our <em>community</em></h2>
+          <p class="section-sub reviews-sub">Every book carries someone's most treasured memories. Here's what they say.</p>
+        </div>
+        <div class="reviews-trust-bar reveal delay-1">
+          <div class="rtb-stat">
+            <span class="rtb-num">4.9</span>
+            <div class="rtb-stars">★★★★★</div>
+            <span class="rtb-label">Average rating</span>
+          </div>
+          <div class="rtb-divider"></div>
+          <div class="rtb-stat">
+            <span class="rtb-num">12k+</span>
+            <span class="rtb-label">Happy customers</span>
+          </div>
+          <div class="rtb-divider"></div>
+          <div class="rtb-stat">
+            <span class="rtb-num">98%</span>
+            <span class="rtb-label">Would reorder</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carousel -->
+      <div class="reviews-carousel reveal">
+        <button class="carousel-arrow carousel-arrow-prev" id="prevReview" aria-label="Previous reviews">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="reviews-track-wrap">
+          <div class="reviews-track" id="reviewsTrack"></div>
+        </div>
+        <button class="carousel-arrow carousel-arrow-next" id="nextReview" aria-label="Next reviews">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="carousel-dots-wrap">
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+
+      <!-- Write Review CTA + Form -->
+      <div class="review-cta-wrap reveal">
+        <div class="review-cta-inner">
+          <div class="review-cta-text">
+            <span class="review-cta-icon">✍️</span>
+            <div>
+              <strong>Loved your BindCraft book?</strong>
+              <p>Share your story — it helps others find their perfect book.</p>
+            </div>
+          </div>
+          <button id="writeReviewBtn" class="review-write-btn">Write a Review</button>
+        </div>
+      </div>
+
+      <div class="review-form" id="reviewForm">
+        <div class="review-form-header">
+          <h3>Share your experience</h3>
+          <p>Your review helps our community of book lovers</p>
+        </div>
+        <div class="review-form-rating">
+          <label class="review-form-label">Your rating</label>
+          <div class="stars-input" id="starInput">
+            <span data-star="1">★</span>
+            <span data-star="2">★</span>
+            <span data-star="3">★</span>
+            <span data-star="4">★</span>
+            <span data-star="5">★</span>
+          </div>
+        </div>
+        <div class="review-form-fields">
+          <div class="review-field-row">
+            <div class="form-group">
+              <label>Your Name</label>
+              <input type="text" placeholder="e.g. Priya N." class="form-input"/>
+            </div>
+            <div class="form-group">
+              <label>Book Title <span class="optional-tag">optional</span></label>
+              <input type="text" placeholder="e.g. Timeless Vows album" class="form-input"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Your Review</label>
+            <textarea class="form-input review-textarea" rows="4" placeholder="What made your BindCraft book special?"></textarea>
+          </div>
+        </div>
+        <div class="review-form-actions">
+          <button type="button" class="review-cancel-btn" id="cancelReviewBtn">Cancel</button>
+          <button type="button" class="btn-primary" id="submitReviewBtn">
+            Publish Review
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RESERVATION ── -->
+  <section class="reservation" id="reservation">
+    <!-- Animated background elements -->
+    <div class="res-bg-pattern" aria-hidden="true"></div>
+    <div class="res-glow res-glow-1" aria-hidden="true"></div>
+    <div class="res-glow res-glow-2" aria-hidden="true"></div>
+
+    <div class="section-container">
+      <div class="reservation-inner reveal">
+
+        <!-- Left: Info panel -->
+        <div class="reservation-text">
+          <div class="section-tag">✦ Reserve a Slot</div>
+          <h2 class="section-title">Book your <em>studio visit</em></h2>
+          <p>Step into our atelier for a hands-on experience with premium papers, binding styles, and printing samples — guided by our in-house book designers.</p>
+
+          <!-- What to expect -->
+          <div class="res-steps">
+            <div class="res-step">
+              <div class="res-step-num">01</div>
+              <div class="res-step-content">
+                <strong>Touch & feel</strong>
+                <span>50+ paper stocks and binding styles in person</span>
+              </div>
+            </div>
+            <div class="res-step">
+              <div class="res-step-num">02</div>
+              <div class="res-step-content">
+                <strong>Design together</strong>
+                <span>Our experts craft the perfect plan for your book</span>
+              </div>
+            </div>
+            <div class="res-step">
+              <div class="res-step-num">03</div>
+              <div class="res-step-content">
+                <strong>Walk away inspired</strong>
+                <span>Leave with a clear vision and a special offer</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Studio details pills -->
+          <div class="res-detail-pills">
+            <div class="res-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Studio 12, The Bindery, Old Town
+            </div>
+            <div class="res-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Mon–Sat · 9 am – 6 pm
+            </div>
+            <div class="res-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              60-minute sessions · Free
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Booking form -->
+        <div class="reservation-form-card">
+          <div class="res-form-header">
+            <h3>Reserve your session</h3>
+            <p>Spots fill fast — book yours today</p>
+          </div>
+          <div class="reservation-form">
+            <div class="res-field-row">
+              <div class="form-group res-form-group">
+                <label>Full Name</label>
+                <div class="res-input-wrap">
+                  <svg class="res-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <input type="text" placeholder="Your full name" class="form-input res-input"/>
+                </div>
+              </div>
+              <div class="form-group res-form-group">
+                <label>Email</label>
+                <div class="res-input-wrap">
+                  <svg class="res-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <input type="email" placeholder="you@email.com" class="form-input res-input"/>
+                </div>
+              </div>
+            </div>
+            <div class="res-field-row">
+              <div class="form-group res-form-group">
+                <label>Preferred Date</label>
+                <div class="res-input-wrap">
+                  <svg class="res-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <input type="date" class="form-input res-input" id="resDate"/>
+                </div>
+              </div>
+              <div class="form-group res-form-group">
+                <label>Session Time</label>
+                <div class="res-input-wrap">
+                  <svg class="res-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <input type="time" class="form-input res-input" id="resTime" autocomplete="off" required>
+                </div>
+              </div>
+            </div>
+            <div class="form-group res-form-group res-form-group-full">
+              <label>What are you planning? <span class="optional-tag">optional</span></label>
+              <textarea class="form-input res-textarea" rows="3" placeholder="Wedding album, travel photo book, corporate gift..."></textarea>
+            </div>
+            <button class="btn-primary full-width res-submit-btn" id="reserveBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Confirm My Session
+            </button>
+            <p class="res-fine-print">Free cancellation up to 24 hours before your session</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <section class="contact" id="contact">
+    <div class="section-container">
+      <div class="section-header reveal">
+        <div class="section-tag">✦ Get in Touch</div>
+        <h2 class="section-title">We'd love to <em>hear from you</em></h2>
+        <p class="section-sub">Questions, custom orders, or just want to say hello — our team is ready.</p>
+      </div>
+
+      <div class="contact-grid">
+        <!-- Left: channels + map snip -->
+        <div class="contact-left">
+          <div class="contact-channels reveal">
+            <a href="mailto:hello@bindcraft.studio" class="contact-channel">
+              <div class="contact-channel-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div>
+              <div class="contact-channel-body">
+                <strong>Email us</strong>
+                <span>hello@bindcraft.studio</span>
+                <em>Reply within 24 hours</em>
+              </div>
+              <div class="contact-channel-arrow">→</div>
+            </a>
+            <a href="tel:+15550123456" class="contact-channel">
+              <div class="contact-channel-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              </div>
+              <div class="contact-channel-body">
+                <strong>Call us</strong>
+                <span>+1 (555) 012-3456</span>
+                <em>Mon–Fri, 9 am – 5 pm EST</em>
+              </div>
+              <div class="contact-channel-arrow">→</div>
+            </a>
+            <a href="#reservation" class="contact-channel">
+              <div class="contact-channel-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div class="contact-channel-body">
+                <strong>Visit the studio</strong>
+                <span>Studio 12, The Bindery, Old Town</span>
+                <em>Mon–Sat · 9 am – 6 pm</em>
+              </div>
+              <div class="contact-channel-arrow">→</div>
+            </a>
+            <button class="contact-channel contact-channel-chat" id="liveChatBtn">
+              <div class="contact-channel-icon contact-channel-icon-chat">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </div>
+              <div class="contact-channel-body">
+                <strong>Live chat</strong>
+                <span>Talk to Paige, our AI assistant</span>
+                <em>Available now</em>
+              </div>
+              <div class="contact-online-dot"></div>
+            </button>
+          </div>
+
+          <!-- FAQ accordion -->
+          <div class="contact-faq reveal delay-2">
+            <h4 class="contact-faq-title">Frequently asked</h4>
+            <div class="faq-item">
+              <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                How long does printing take?
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="faq-a">Standard orders ship in 7–10 business days after proof approval. Express options are available at checkout for faster delivery.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Can I see a proof before printing?
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="faq-a">Yes — every order includes a free digital proof review. We won't print until you're completely happy with how it looks.</div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Do you ship internationally?
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="faq-a">Absolutely — we ship worldwide. Orders over ₹3,000 qualify for free shipping. Delivery times vary by destination.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Contact form -->
+        <div class="contact-form-wrap reveal">
+          <div class="contact-form-header">
+            <h3>Send us a message</h3>
+            <p>We'll get back to you within 24 hours</p>
+          </div>
+          <form class="contact-form" id="contactForm" onsubmit="return false;">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Name <span class="required-dot">*</span></label>
+                <input type="text" placeholder="Your name" class="form-input" required/>
+              </div>
+              <div class="form-group">
+                <label>Email <span class="required-dot">*</span></label>
+                <input type="email" placeholder="your@email.com" class="form-input" required/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <div class="contact-subject-chips">
+                <button type="button" class="subject-chip active" onclick="selectSubject(this,'General enquiry')">General enquiry</button>
+                <button type="button" class="subject-chip" onclick="selectSubject(this,'Custom order')">Custom order</button>
+                <button type="button" class="subject-chip" onclick="selectSubject(this,'Bulk / Corporate')">Bulk / Corporate</button>
+                <button type="button" class="subject-chip" onclick="selectSubject(this,'Support')">Support</button>
+              </div>
+              <input type="text" id="contactSubjectInput" placeholder="Or type your subject…" class="form-input contact-subject-input" value="General enquiry"/>
+            </div>
+            <div class="form-group">
+              <label>Message <span class="required-dot">*</span></label>
+              <textarea class="form-input contact-textarea" rows="5" placeholder="Tell us about your project, questions, or anything on your mind…" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary full-width" id="contactSubmitBtn">
+              Send Message
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-brand">
+          <svg class="brand-logo-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGold2" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#f0c96a"/>
+                <stop offset="100%" stop-color="#c9973b"/>
+              </linearGradient>
+            </defs>
+            <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#logoGold2)" opacity="0.9"/>
+            <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#logoGold2)" opacity="0.15"/>
+            <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#logoGold2)" stroke-width="1.5"/>
+            <line x1="13" y1="12" x2="28" y2="12" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+            <line x1="13" y1="17" x2="26" y2="17" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <line x1="13" y1="22" x2="24" y2="22" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+            <circle cx="28" cy="10" r="3" fill="#f0c96a"/>
+            <text x="28" y="11.5" text-anchor="middle" font-size="4" fill="#1a1008" font-weight="bold">✦</text>
+          </svg>
+          <span class="brand-text">BindCraft</span>
+        </div>
+        <p>Crafting stories that last forever.</p>
+        <div class="socials">
+          <a href="#" class="social-btn" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Pinterest">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.03-2.83.19-.78 1.26-5.34 1.26-5.34s-.32-.64-.32-1.59c0-1.49.86-2.6 1.93-2.6.91 0 1.35.68 1.35 1.5 0 .91-.58 2.28-.88 3.55-.25 1.06.53 1.92 1.57 1.92 1.88 0 3.14-2.42 3.14-5.28 0-2.18-1.46-3.71-3.55-3.71-2.42 0-3.84 1.81-3.84 3.68 0 .73.28 1.51.63 1.93a.25.25 0 01.06.24l-.24.96c-.04.15-.13.18-.3.11-1.09-.51-1.77-2.1-1.77-3.39 0-2.76 2.01-5.3 5.79-5.3 3.04 0 5.4 2.17 5.4 5.07 0 3.02-1.9 5.45-4.54 5.45-.89 0-1.72-.46-2.01-1.01l-.54 2.04c-.2.76-.73 1.71-1.09 2.29C11.02 21.96 11.5 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+          </a>
+          <a href="#" class="social-btn" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Services</h5>
+          <a href="#designs">Photo Books</a>
+          <a href="#designs">Wedding Albums</a>
+          <a href="#designs">Corporate Books</a>
+          <a href="#designs">Journals</a>
+        </div>
+        <div class="footer-col">
+          <h5>Company</h5>
+          <a href="#about">About Us</a>
+          <a href="#reviews">Reviews</a>
+          <a href="#reservation">Studio Visit</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h5>Support</h5>
+          <a href="#">FAQs</a>
+          <a href="#">Shipping Info</a>
+          <a href="#">Returns</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 BindCraft Studio. All rights reserved. Made with ❤️ for storytellers.</p>
+    </div>
+  </footer>
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Modal overlay (used by design cards) -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open');document.body.style.overflow=''">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ── Contact subject chips ── */
+    function selectSubject(el, val) {
+      document.querySelectorAll('.subject-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('contactSubjectInput').value = val;
+    }
+
+    /* ── Cancel review button ── */
+    document.addEventListener('DOMContentLoaded', function() {
+      var cancelBtn = document.getElementById('cancelReviewBtn');
+      var writeBtn  = document.getElementById('writeReviewBtn');
+      var form      = document.getElementById('reviewForm');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+          if (form) form.classList.remove('open');
+          if (writeBtn) writeBtn.textContent = 'Write a Review';
+        });
+      }
+    });
+
+    /* ── New pricing toggle (button-based) ── */
+    window.switchCover = function(type) {
+      var softBtn = document.getElementById('ptoggle-soft');
+      var hardBtn = document.getElementById('ptoggle-hard');
+      var toggle  = document.getElementById('pricingToggle');
+      if (type === 'hard') {
+        if (softBtn) softBtn.classList.remove('ptoggle-active');
+        if (hardBtn) hardBtn.classList.add('ptoggle-active');
+        if (toggle) { toggle.checked = true; toggle.dispatchEvent(new Event('change')); }
+      } else {
+        if (hardBtn) hardBtn.classList.remove('ptoggle-active');
+        if (softBtn) softBtn.classList.add('ptoggle-active');
+        if (toggle) { toggle.checked = false; toggle.dispatchEvent(new Event('change')); }
+      }
+    };
+    /* Keep legacy checkbox in sync */
+    document.addEventListener('DOMContentLoaded', function() {
+      var toggle = document.getElementById('pricingToggle');
+      if (toggle) {
+        toggle.addEventListener('change', function() {
+          window.switchCover(toggle.checked ? 'hard' : 'soft');
+        });
+      }
+    });
+  </script>
+
+  <script src="project.js"></script>
+  <script src="chatbot.js"></script>
+  <script src="card.js"></script>
+  <script src="order.js"></script>
+  <script src="review.js"></script>
+
+  <!-- BindCraft API connector — wires all forms to the backend -->
+  <script src="api.js"></script>
+
+  <script src="auth-gate.js"></script>
+</body>
+</html>

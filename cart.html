@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Cart – BindCraft</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9973b;
+      --gold-light: #f0c96a;
+      --gold-dark: #9a7028;
+      --ink: #1a1008;
+      --ink-mid: #3a2a12;
+      --page: #fdf8f0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ink);
+      color: var(--page);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(26,16,8,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,151,59,0.2);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+    .brand-text { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold-light); }
+    .nav-back {
+      display: flex; align-items: center; gap: 0.5rem;
+      color: rgba(253,248,240,0.6); text-decoration: none; font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--gold-light); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .cart-count-pill {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--ink); border-radius: 50px; padding: 0.25rem 0.8rem;
+      font-size: 0.78rem; font-weight: 700;
+    }
+
+    /* ── HERO STRIP ── */
+    .cart-hero {
+      background: linear-gradient(135deg, #2a1a08 0%, #1a1008 100%);
+      border-bottom: 1px solid rgba(201,151,59,0.15);
+      padding: 2.5rem 2rem 2rem;
+      text-align: center;
+    }
+    .cart-hero-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(201,151,59,0.1); border: 1px solid rgba(201,151,59,0.25);
+      color: var(--gold-light); border-radius: 50px; padding: 0.3rem 1rem;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .cart-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--page);
+    }
+    .cart-hero h1 em { font-style: italic; color: var(--gold-light); }
+    .cart-hero p { color: rgba(253,248,240,0.5); margin-top: 0.5rem; font-size: 0.9rem; }
+
+    /* ── MAIN LAYOUT ── */
+    .cart-layout {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;
+    }
+    @media (max-width: 860px) { .cart-layout { grid-template-columns: 1fr; } }
+
+    /* ── EMPTY STATE ── */
+    .cart-empty {
+      grid-column: 1 / -1; text-align: center; padding: 5rem 2rem;
+    }
+    .cart-empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .cart-empty h2 { font-family: 'Playfair Display', serif; color: var(--gold-light); margin-bottom: 0.5rem; }
+    .cart-empty p { color: rgba(253,248,240,0.4); margin-bottom: 2rem; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--ink); border: none; border-radius: 50px;
+      padding: 0.8rem 2rem; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all 0.3s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(201,151,59,0.5); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: transparent; color: rgba(253,248,240,0.7);
+      border: 1px solid rgba(253,248,240,0.2); border-radius: 50px;
+      padding: 0.8rem 2rem; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold-light); }
+
+    /* ── CART ITEMS ── */
+    .cart-items-section h2 {
+      font-family: 'Playfair Display', serif; font-size: 1.2rem;
+      color: var(--gold-light); margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cart-item {
+      background: rgba(253,248,240,0.04);
+      border: 1px solid rgba(201,151,59,0.15);
+      border-radius: 16px; padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      display: grid; grid-template-columns: 56px 1fr auto;
+      gap: 1rem; align-items: start;
+      transition: border-color 0.2s;
+      animation: item-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes item-in {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+    .cart-item:hover { border-color: rgba(201,151,59,0.35); }
+    .cart-item-icon {
+      width: 56px; height: 56px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(201,151,59,0.2), rgba(201,151,59,0.05));
+      border: 1px solid rgba(201,151,59,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; flex-shrink: 0;
+    }
+    .cart-item-info { min-width: 0; }
+    .cart-item-title {
+      font-family: 'Playfair Display', serif; font-size: 1rem;
+      color: var(--page); margin-bottom: 0.35rem; font-weight: 700;
+    }
+    .cart-item-meta {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem;
+    }
+    .meta-chip {
+      background: rgba(201,151,59,0.1); border: 1px solid rgba(201,151,59,0.2);
+      color: rgba(253,248,240,0.65); border-radius: 50px;
+      padding: 0.18rem 0.6rem; font-size: 0.72rem; font-weight: 500;
+    }
+    .cart-item-id { font-size: 0.72rem; color: rgba(253,248,240,0.3); font-family: monospace; }
+    .cart-item-status {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
+      padding: 0.2rem 0.7rem; border-radius: 50px; text-transform: capitalize;
+    }
+    .status-received { background: rgba(201,151,59,0.15); color: var(--gold-light); border: 1px solid rgba(201,151,59,0.3); }
+    .status-processing { background: rgba(96,160,255,0.15); color: #90c0ff; border: 1px solid rgba(96,160,255,0.3); }
+    .status-shipped { background: rgba(96,200,160,0.15); color: #60c8a0; border: 1px solid rgba(96,200,160,0.3); }
+    .status-delivered { background: rgba(96,192,96,0.15); color: #60c060; border: 1px solid rgba(96,192,96,0.3); }
+    .status-paid { background: rgba(96,192,96,0.2); color: #60c060; border: 1px solid rgba(96,192,96,0.4); }
+
+    .cart-item-right {
+      text-align: right; display: flex; flex-direction: column;
+      align-items: flex-end; gap: 0.5rem; flex-shrink: 0;
+    }
+    .cart-item-price {
+      font-family: 'Playfair Display', serif; font-size: 1.1rem;
+      color: var(--gold-light); font-weight: 700;
+    }
+    .cart-item-date { font-size: 0.7rem; color: rgba(253,248,240,0.3); }
+    .btn-remove {
+      background: transparent; border: 1px solid rgba(212,96,122,0.25);
+      color: rgba(212,96,122,0.6); border-radius: 8px; padding: 0.3rem 0.7rem;
+      font-size: 0.72rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-remove:hover { background: rgba(212,96,122,0.1); color: #d4607a; border-color: #d4607a; }
+    .btn-checkout-item {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--ink); border: none; border-radius: 8px;
+      padding: 0.35rem 0.9rem; font-size: 0.75rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+    }
+    .btn-checkout-item:hover { transform: scale(1.04); }
+
+    /* ── ORDER SUMMARY SIDEBAR ── */
+    .order-summary {
+      background: rgba(253,248,240,0.04);
+      border: 1px solid rgba(201,151,59,0.2);
+      border-radius: 20px; padding: 1.5rem;
+      position: sticky; top: 80px;
+    }
+    .order-summary h2 {
+      font-family: 'Playfair Display', serif; font-size: 1.15rem;
+      color: var(--gold-light); margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem; border-bottom: 1px solid rgba(201,151,59,0.15);
+    }
+    .summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.5rem 0; font-size: 0.85rem; color: rgba(253,248,240,0.65);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-row.total {
+      color: var(--page); font-weight: 700; font-size: 1rem;
+      margin-top: 0.75rem; padding-top: 0.75rem;
+      border-top: 1px solid rgba(201,151,59,0.2); border-bottom: none;
+    }
+    .summary-row.total span:last-child { color: var(--gold-light); font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+    .delivery-note {
+      background: rgba(201,151,59,0.08); border: 1px solid rgba(201,151,59,0.18);
+      border-radius: 10px; padding: 0.75rem; margin: 1rem 0;
+      font-size: 0.78rem; color: rgba(253,248,240,0.6); line-height: 1.5;
+    }
+    .delivery-note strong { color: var(--gold-light); }
+    .checkout-btn {
+      width: 100%; background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: var(--ink); border: none; border-radius: 14px;
+      padding: 1rem 1.5rem; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      transition: all 0.3s; margin-top: 0.5rem;
+    }
+    .checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(201,151,59,0.5); }
+    .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .checkout-btn-sub { font-size: 0.72rem; opacity: 0.75; font-weight: 500; }
+    .continue-btn {
+      width: 100%; background: transparent;
+      color: rgba(253,248,240,0.5);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+      padding: 0.8rem 1.5rem; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s; margin-top: 0.6rem; text-decoration: none;
+      display: block; text-align: center;
+    }
+    .continue-btn:hover { border-color: rgba(201,151,59,0.4); color: var(--gold-light); }
+    .trust-badges {
+      display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.2rem;
+    }
+    .trust-badge {
+      display: flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; color: rgba(253,248,240,0.35);
+    }
+
+    /* ── LOADING SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 10px; height: 90px; margin-bottom: 1rem;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #2a1a08; border: 1px solid rgba(201,151,59,0.3);
+      color: var(--page); border-radius: 50px; padding: 0.75rem 1.5rem;
+      font-size: 0.85rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+      opacity: 0; z-index: 9999; white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.success { border-color: rgba(96,192,96,0.4); }
+    .toast.error   { border-color: rgba(212,96,122,0.4); }
+
+    /* ── SELECTED ITEMS INDICATOR ── */
+    .select-all-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .select-all-row label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem; color: rgba(253,248,240,0.6); }
+    .select-all-row input[type=checkbox] { accent-color: var(--gold); width: 15px; height: 15px; }
+    .selected-count { font-size: 0.78rem; color: var(--gold-light); }
+
+    .item-checkbox { accent-color: var(--gold); width: 16px; height: 16px; cursor: pointer; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f0c96a"/><stop offset="100%" stop-color="#c9973b"/>
+          </linearGradient>
+        </defs>
+        <rect x="4" y="4" width="5" height="28" rx="2" fill="url(#lg)" opacity="0.9"/>
+        <rect x="9" y="4" width="23" height="28" rx="2" fill="url(#lg)" opacity="0.25"/>
+        <rect x="9" y="4" width="23" height="28" rx="2" stroke="url(#lg)" stroke-width="1.5"/>
+        <line x1="13" y1="12" x2="28" y2="12" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+        <line x1="13" y1="17" x2="26" y2="17" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        <line x1="13" y1="22" x2="24" y2="22" stroke="#f0c96a" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+      </svg>
+      <span class="brand-text">BindCraft</span>
+    </a>
+    <div class="nav-right">
+      <span class="cart-count-pill" id="cartCountPill">🛒 0 items</span>
+      <a href="index.html" class="nav-back">← Back to Studio</a>
+    </div>
+  </nav>
+
+  <!-- HERO STRIP -->
+  <div class="cart-hero">
+    <div class="cart-hero-tag">✦ Your Cart</div>
+    <h1>Your <em>Orders</em></h1>
+    <p>Review your custom books and proceed to delivery & payment</p>
+  </div>
+
+  <!-- MAIN -->
+  <main class="cart-layout" id="cartLayout">
+    <!-- loaded by JS -->
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+  (function() {
+    'use strict';
+
+    var API = 'http://localhost:3001/api';
+
+    // ── Price calculator ──
+    var PRICES = {
+      bookType: { photo: 1200, journal: 800, album: 2500, corporate: 1800 },
+      cover:    { hardcover: 0, softcover: -150, linen: 300, leather: 600 },
+      size:     { a4: 0, square: 200, a5: -100, panoramic: 400 },
+      pageBase: 40,
+      perPage:  15
+    };
+
+    function calcPrice(order) {
+      var base  = PRICES.bookType[order.bookType] || 1200;
+      var cover = PRICES.cover[order.cover] || 0;
+      var size  = PRICES.size[order.size] || 0;
+      var pages = ((Number(order.pageCount) || 40) - PRICES.pageBase) * PRICES.perPage;
+      return Math.max(500, base + cover + size + pages);
+    }
+
+    function formatPrice(n) { return '₹' + n.toLocaleString('en-IN'); }
+
+    // ── Book type display ──
+    var TYPE_ICONS  = { photo:'📷', journal:'📓', album:'💍', corporate:'📊' };
+    var TYPE_LABELS = { photo:'Photo Book', journal:'Journal', album:'Wedding Album', corporate:'Corporate Book' };
+
+    // ── Local cart ──
+    function getCart() {
+      try { return JSON.parse(localStorage.getItem('bc_cart') || '[]'); }
+      catch(e) { return []; }
+    }
+    function saveCart(items) {
+      localStorage.setItem('bc_cart', JSON.stringify(items));
+    }
+
+    // ── Toast ──
+    function toast(msg, type) {
+      var t = document.getElementById('toast');
+      t.textContent = msg; t.className = 'toast ' + (type||'') + ' show';
+      setTimeout(function(){ t.classList.remove('show'); }, 3500);
+    }
+
+    // ── Format date ──
+    function fmtDate(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    // ── Render ──
+    function render(items) {
+      var layout = document.getElementById('cartLayout');
+      var pill   = document.getElementById('cartCountPill');
+      pill.textContent = '🛒 ' + items.length + ' item' + (items.length !== 1 ? 's' : '');
+
+      if (items.length === 0) {
+        layout.innerHTML =
+          '<div class="cart-empty">' +
+            '<div class="cart-empty-icon">📚</div>' +
+            '<h2>Your cart is empty</h2>' +
+            '<p>Place an order to see your custom books here.</p>' +
+            '<a href="index.html#order" class="btn-primary">Start Creating</a>' +
+          '</div>';
+        return;
+      }
+
+      // Count pending (not yet paid) items
+      var pending = items.filter(function(i){ return i.status !== 'paid' && i.status !== 'shipped' && i.status !== 'delivered'; });
+      var totalAmt = items.reduce(function(s, i){ return s + calcPrice(i); }, 0);
+      var pendingAmt = pending.reduce(function(s, i){ return s + calcPrice(i); }, 0);
+
+      var itemsHTML = items.map(function(item, idx) {
+        var price  = calcPrice(item);
+        var icon   = TYPE_ICONS[item.bookType]  || '📖';
+        var label  = TYPE_LABELS[item.bookType] || item.bookType;
+        var isPaid = item.status === 'paid' || item.status === 'shipped' || item.status === 'delivered';
+
+        return '<div class="cart-item" id="item-' + idx + '">' +
+          '<div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">' +
+            '<input type="checkbox" class="item-checkbox" data-idx="' + idx + '" ' + (!isPaid ? 'checked' : 'disabled') + '/>' +
+            '<div class="cart-item-icon">' + icon + '</div>' +
+          '</div>' +
+          '<div class="cart-item-info">' +
+            '<div class="cart-item-title">' + label + '</div>' +
+            '<div class="cart-item-meta">' +
+              '<span class="meta-chip">📐 ' + (item.size||'A4').toUpperCase() + '</span>' +
+              '<span class="meta-chip">📄 ' + (item.pageCount||40) + ' pages</span>' +
+              '<span class="meta-chip">🎨 ' + capitalize(item.cover||'hardcover') + '</span>' +
+              '<span class="meta-chip">🖋 ' + capitalize(item.pageColor||'white') + ' pages</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:0.5rem;">' +
+              '<span class="cart-item-status status-' + item.status + '">● ' + (item.status||'received') + '</span>' +
+            '</div>' +
+            '<div class="cart-item-id">Order #' + (item.id||'local').substring(0,8).toUpperCase() + ' · ' + fmtDate(item.createdAt) + '</div>' +
+          '</div>' +
+          '<div class="cart-item-right">' +
+            '<div class="cart-item-price">' + formatPrice(price) + '</div>' +
+            (!isPaid
+              ? '<button class="btn-checkout-item" onclick="checkoutSingle(' + idx + ')">Pay & Deliver →</button>'
+              : '<span style="font-size:0.72rem;color:#60c060;">✓ Paid</span>'
+            ) +
+            '<button class="btn-remove" onclick="removeItem(' + idx + ')">Remove</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      var deliveryFee = pendingAmt > 0 ? 99 : 0;
+      var grandTotal  = pendingAmt + deliveryFee;
+
+      layout.innerHTML =
+        '<div class="cart-items-section">' +
+          '<h2>📦 Your Custom Books</h2>' +
+          '<div class="select-all-row">' +
+            '<label><input type="checkbox" id="selectAll" checked onchange="toggleAll(this)"/> Select all pending</label>' +
+            '<span class="selected-count" id="selCount">' + pending.length + ' selected</span>' +
+          '</div>' +
+          itemsHTML +
+        '</div>' +
+        '<div class="order-summary">' +
+          '<h2>Order Summary</h2>' +
+          generateSummaryRows(items) +
+          '<div class="summary-row total"><span>Grand Total</span><span>' + formatPrice(pendingAmt + deliveryFee) + '</span></div>' +
+          '<div class="delivery-note">' +
+            '<strong>🚚 5-Day Delivery</strong><br/>' +
+            'Free gift wrapping included. Estimated delivery after payment confirmation.' +
+          '</div>' +
+          '<button class="checkout-btn" id="checkoutAllBtn" onclick="checkoutSelected()"' + (pending.length === 0 ? ' disabled' : '') + '>' +
+            '<div>' +
+              '<div>Proceed to Payment</div>' +
+              '<div class="checkout-btn-sub">Secure checkout · ₹' + grandTotal.toLocaleString('en-IN') + '</div>' +
+            '</div>' +
+            '<span>→</span>' +
+          '</button>' +
+          '<a href="index.html#order" class="continue-btn">+ Add Another Book</a>' +
+          '<div class="trust-badges">' +
+            '<span class="trust-badge">🔒 Secure</span>' +
+            '<span class="trust-badge">📦 Tracked</span>' +
+            '<span class="trust-badge">↩️ Easy Returns</span>' +
+          '</div>' +
+        '</div>';
+
+      // Attach checkbox listeners for summary update
+      document.querySelectorAll('.item-checkbox').forEach(function(cb){
+        cb.addEventListener('change', updateSelCount);
+      });
+    }
+
+    function generateSummaryRows(items) {
+      return items.map(function(item, i){
+        var label = (TYPE_LABELS[item.bookType] || 'Book') + ' #' + (i+1);
+        return '<div class="summary-row"><span>' + label + '</span><span>' + formatPrice(calcPrice(item)) + '</span></div>';
+      }).join('') +
+      '<div class="summary-row"><span>Delivery</span><span>₹99</span></div>';
+    }
+
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+    // ── Toggle all ──
+    window.toggleAll = function(master) {
+      document.querySelectorAll('.item-checkbox:not(:disabled)').forEach(function(cb){
+        cb.checked = master.checked;
+      });
+      updateSelCount();
+    };
+
+    function updateSelCount() {
+      var checked = document.querySelectorAll('.item-checkbox:checked').length;
+      var el = document.getElementById('selCount');
+      if (el) el.textContent = checked + ' selected';
+    }
+
+    // ── Remove item ──
+    window.removeItem = function(idx) {
+      var cart = getCart();
+      cart.splice(idx, 1);
+      saveCart(cart);
+      toast('Item removed from cart.', '');
+      render(cart);
+    };
+
+    // ── Checkout single item ──
+    window.checkoutSingle = function(idx) {
+      var cart = getCart();
+      var item = cart[idx];
+      if (!item) return;
+      // Pass selected items to payment page
+      var toCheckout = [item];
+      localStorage.setItem('bc_checkout', JSON.stringify(toCheckout));
+      window.location.href = 'payment.html';
+    };
+
+    // ── Checkout selected items ──
+    window.checkoutSelected = function() {
+      var cart    = getCart();
+      var checked = document.querySelectorAll('.item-checkbox:checked');
+      var idxs    = [];
+      checked.forEach(function(cb){ idxs.push(parseInt(cb.dataset.idx, 10)); });
+      if (idxs.length === 0) { toast('Please select at least one item.', 'error'); return; }
+      var toCheckout = idxs.map(function(i){ return cart[i]; });
+      localStorage.setItem('bc_checkout', JSON.stringify(toCheckout));
+      window.location.href = 'payment.html';
+    };
+
+    // ── Load cart (try server first, fallback to localStorage) ──
+    function loadCart() {
+      var layout = document.getElementById('cartLayout');
+      layout.innerHTML = '<div class="cart-items-section"><div class="skeleton"></div><div class="skeleton" style="height:70px;opacity:0.6"></div></div>';
+
+      var token = localStorage.getItem('bc_token');
+      if (!token) {
+        // Not logged in — show local cart only
+        render(getCart());
+        return;
+      }
+
+      fetch(API + '/orders', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (res.success && res.orders) {
+          // Merge server orders into local cart (deduplicate by id)
+          var local = getCart();
+          var serverIds = res.orders.map(function(o){ return o.id; });
+          // Keep local items not yet synced (no id or id not on server)
+          var merged = res.orders.concat(
+            local.filter(function(l){ return !l.id || serverIds.indexOf(l.id) === -1; })
+          );
+          saveCart(merged);
+          render(merged);
+        } else {
+          render(getCart());
+        }
+      })
+      .catch(function(){ render(getCart()); });
+    }
+
+    loadCart();
+  })();
+  </script>
+</body>
+</html>

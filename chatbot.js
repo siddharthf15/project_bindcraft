@@ -243,7 +243,7 @@ IMPORTANT RULES:
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
           </button>
         </div>
-        <div class="bc-input-footer">Powered by Claude AI · BindCraft Studio</div>
+        <div class="bc-input-footer">Powered by Gemini AI · BindCraft Studio</div>
       </div>
     `;
 
@@ -360,10 +360,9 @@ IMPORTANT RULES:
     return null;
   }
 
-  /* ── API CALL — direct to Anthropic (no backend needed) ── */
-  /* Set your API key here ↓ or in the BINDCRAFT_API_KEY env/global var   */
-  const BC_API_KEY = (typeof BINDCRAFT_API_KEY !== 'undefined' ? BINDCRAFT_API_KEY : '')
-                     || 'YOUR_API_KEY_HERE';   // ← paste your sk-ant-… key
+  /* ── API CALL — Google Gemini ── */
+  const BC_GEMINI_KEY = 'AIzaSyD086xo8WFSosuRbkQKagxYphMUCBRGSdY';
+  const BC_GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   async function callClaude(userText) {
     conversationHistory.push({ role: 'user', content: userText });
@@ -373,20 +372,22 @@ IMPORTANT RULES:
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 10000);
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      /* Build Gemini contents array from conversation history */
+      const contents = conversationHistory.slice(-20).map(function (m) {
+        return {
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        };
+      });
+
+      const response = await fetch(BC_GEMINI_URL + '?key=' + BC_GEMINI_KEY, {
         method: 'POST',
         signal: controller.signal,
-        headers: {
-          'Content-Type':                          'application/json',
-          'x-api-key':                             BC_API_KEY,
-          'anthropic-version':                     '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model:      'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system:     BC_SYSTEM_PROMPT,
-          messages:   conversationHistory.slice(-20),
+          systemInstruction: { parts: [{ text: BC_SYSTEM_PROMPT }] },
+          contents: contents,
+          generationConfig: { maxOutputTokens: 1000 },
         }),
       });
 
@@ -398,7 +399,8 @@ IMPORTANT RULES:
       }
 
       const data = await response.json();
-      const raw  = data.content?.[0]?.text || "I'm sorry, I couldn't get a response. Please try again.";
+      const raw  = data.candidates?.[0]?.content?.parts?.[0]?.text
+                   || "I'm sorry, I couldn't get a response. Please try again.";
 
       /* Parse NAV directive */
       const navMatch  = raw.match(/\nNAV:(\w+)\s*$/);
@@ -419,13 +421,11 @@ IMPORTANT RULES:
 
       /* Friendly message depending on error type */
       const isAbort   = e.name === 'AbortError';
-      const isAuthErr = e.message && e.message.includes('401');
-      const isKeyErr  = BC_API_KEY === 'YOUR_API_KEY_HERE' || BC_API_KEY === '';
+      const isAuthErr = e.message && (e.message.includes('401') || e.message.includes('403'));
 
       let msg = 'Hmm, I\'m having a little trouble connecting right now. You can reach our team at <strong>hello@bindcraft.studio</strong> or call <strong>+1 (555) 012-3456</strong>.';
-      if (isKeyErr)  msg = '⚙️ The AI key isn\'t configured yet — please add your Anthropic API key to chatbot.js. In the meantime, try the quick-answer buttons above or email us at <strong>hello@bindcraft.studio</strong>!';
-      else if (isAbort) msg = '⏱ That took a bit too long — please try again.';
-      else if (isAuthErr) msg = '🔑 API key issue. Please check the <strong>BC_API_KEY</strong> in chatbot.js.';
+      if (isAbort)   msg = '⏱ That took a bit too long — please try again.';
+      else if (isAuthErr) msg = '🔑 API key issue. Please check the <strong>BC_GEMINI_KEY</strong> in chatbot.js.';
 
       return { text: msg, nav: null };
     }

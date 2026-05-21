@@ -360,49 +360,74 @@ IMPORTANT RULES:
     return null;
   }
 
-  /* ── API CALL (via backend proxy — keeps API key safe) ── */
-  const BACKEND = 'http://localhost:3001/api';
+  /* ── API CALL — direct to Anthropic (no backend needed) ── */
+  /* Set your API key here ↓ or in the BINDCRAFT_API_KEY env/global var   */
+  const BC_API_KEY = (typeof BINDCRAFT_API_KEY !== 'undefined' ? BINDCRAFT_API_KEY : '')
+                     || 'YOUR_API_KEY_HERE';   // ← paste your sk-ant-… key
 
   async function callClaude(userText) {
     conversationHistory.push({ role: 'user', content: userText });
 
     try {
-      const response = await fetch(BACKEND + '/chat', {
+      /* 10-second abort so the typing indicator never hangs forever */
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        headers: {
+          'Content-Type':                          'application/json',
+          'x-api-key':                             BC_API_KEY,
+          'anthropic-version':                     '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
         body: JSON.stringify({
-          system:   BC_SYSTEM_PROMPT,
-          messages: conversationHistory,
+          model:      'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system:     BC_SYSTEM_PROMPT,
+          messages:   conversationHistory.slice(-20),
         }),
       });
 
+      clearTimeout(timer);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+      }
+
       const data = await response.json();
+      const raw  = data.content?.[0]?.text || "I'm sorry, I couldn't get a response. Please try again.";
 
-      if (!data.success) throw new Error(data.error || 'Server error');
-
-      const raw = data.text || "I'm sorry, I couldn't get a response. Please try again.";
-
-      // Parse NAV directive
-      const navMatch = raw.match(/\nNAV:(\w+)\s*$/);
+      /* Parse NAV directive */
+      const navMatch  = raw.match(/\nNAV:(\w+)\s*$/);
       const navTarget = navMatch ? navMatch[1] : null;
       const cleanText = raw.replace(/\nNAV:\w+\s*$/, '').trim();
 
-      // Format text: **bold** → <strong>, newlines → <br>
+      /* Format: **bold** → <strong>, newlines → <br> */
       const formatted = cleanText
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>');
 
       conversationHistory.push({ role: 'assistant', content: cleanText });
-
       return { text: formatted, nav: navTarget };
 
     } catch (e) {
       console.error('BindCraft chatbot error:', e);
-      conversationHistory.pop(); // Remove failed user message
-      return {
-        text: 'Hmm, I\'m having a little trouble connecting right now. You can reach our team at <strong>hello@bindcraft.studio</strong> or call <strong>+1 (555) 012-3456</strong>.',
-        nav: null,
-      };
+      conversationHistory.pop(); // remove failed user message
+
+      /* Friendly message depending on error type */
+      const isAbort   = e.name === 'AbortError';
+      const isAuthErr = e.message && e.message.includes('401');
+      const isKeyErr  = BC_API_KEY === 'YOUR_API_KEY_HERE' || BC_API_KEY === '';
+
+      let msg = 'Hmm, I\'m having a little trouble connecting right now. You can reach our team at <strong>hello@bindcraft.studio</strong> or call <strong>+1 (555) 012-3456</strong>.';
+      if (isKeyErr)  msg = '⚙️ The AI key isn\'t configured yet — please add your Anthropic API key to chatbot.js. In the meantime, try the quick-answer buttons above or email us at <strong>hello@bindcraft.studio</strong>!';
+      else if (isAbort) msg = '⏱ That took a bit too long — please try again.';
+      else if (isAuthErr) msg = '🔑 API key issue. Please check the <strong>BC_API_KEY</strong> in chatbot.js.';
+
+      return { text: msg, nav: null };
     }
   }
 
@@ -525,6 +550,15 @@ IMPORTANT RULES:
   }
 
   /* ── INIT ── */
+  /* Global helper so any script can open the chat */
+  window.bc_openChat = function () {
+    if (!isOpen) toggleChat();
+    setTimeout(function () {
+      var input = document.getElementById('bc-input');
+      if (input) input.focus();
+    }, 400);
+  };
+
   function init() {
     buildUI();
 
@@ -577,10 +611,16 @@ IMPORTANT RULES:
   }
 
   // Wait for DOM
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
+  function initAndSignal() {
     init();
+    /* Signal that the chatbot is ready so other scripts can react */
+    document.dispatchEvent(new CustomEvent('bc:ready'));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAndSignal);
+  } else {
+    initAndSignal();
   }
 
 })();

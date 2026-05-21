@@ -290,16 +290,8 @@
 
   /* ════════════════════════════════════
      5. Chatbot launcher → live chat btn
+     Handled by project.js → bc_openChat()
      ════════════════════════════════════ */
-  ready(function () {
-    var liveBtn  = document.getElementById('liveChatBtn');
-    var launcher = document.getElementById('bc-launcher');
-    if (liveBtn && launcher) {
-      liveBtn.addEventListener('click', function () {
-        launcher.click();
-      });
-    }
-  });
 
   /* ════════════════════════════════════
      6. Init cart badge on load

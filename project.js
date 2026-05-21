@@ -1064,14 +1064,15 @@ flatpickr("#resTime", {
   });
 
   $('#liveChatBtn')?.addEventListener('click', () => {
-    openModal(`
-      <div style="text-align:center;padding:1rem 0">
-        <div style="font-size:3rem;margin-bottom:1rem">💬</div>
-        <h2 style="font-family:var(--font-display);font-size:1.5rem;color:var(--ink);margin-bottom:0.75rem">Live Chat</h2>
-        <p style="color:rgba(58,42,18,0.65);margin-bottom:1.5rem">Our team is available Mon–Fri, 9am–5pm EST. Average response time: <strong>under 2 minutes</strong>.</p>
-        <button onclick="closeModal();showToast('Connecting to support…',''); " style="display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,#c9973b,#f0c96a);color:#1a1008;font-weight:700;padding:.875rem 1.75rem;border-radius:50px;font-size:.9rem;cursor:pointer;border:none;font-family:var(--font-body)">Start Chat Now →</button>
-      </div>
-    `);
+    /* bc_openChat is exposed by chatbot.js after it initialises */
+    if (typeof window.bc_openChat === 'function') {
+      window.bc_openChat();
+    } else {
+      /* chatbot.js not ready yet — wait for it */
+      document.addEventListener('bc:ready', function () {
+        window.bc_openChat();
+      }, { once: true });
+    }
   });
 })();
 

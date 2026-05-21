@@ -360,32 +360,34 @@ IMPORTANT RULES:
     return null;
   }
 
-  /* ── API CALL ── */
+  /* ── API CALL (via backend proxy — keeps API key safe) ── */
+  const BACKEND = 'http://localhost:3001/api';
+
   async function callClaude(userText) {
     conversationHistory.push({ role: 'user', content: userText });
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(BACKEND + '/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: BC_SYSTEM_PROMPT,
-          messages: conversationHistory
-        })
+          system:   BC_SYSTEM_PROMPT,
+          messages: conversationHistory,
+        }),
       });
 
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
       const data = await response.json();
-      const raw = data.content?.[0]?.text || "I'm sorry, I couldn't get a response. Please try again.";
+
+      if (!data.success) throw new Error(data.error || 'Server error');
+
+      const raw = data.text || "I'm sorry, I couldn't get a response. Please try again.";
 
       // Parse NAV directive
       const navMatch = raw.match(/\nNAV:(\w+)\s*$/);
       const navTarget = navMatch ? navMatch[1] : null;
       const cleanText = raw.replace(/\nNAV:\w+\s*$/, '').trim();
 
-      // Format text (convert markdown-ish ** to strong)
+      // Format text: **bold** → <strong>, newlines → <br>
       const formatted = cleanText
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>');
@@ -394,12 +396,12 @@ IMPORTANT RULES:
 
       return { text: formatted, nav: navTarget };
 
-    } catch (err) {
-      console.error('BindCraft chatbot error:', err);
+    } catch (e) {
+      console.error('BindCraft chatbot error:', e);
       conversationHistory.pop(); // Remove failed user message
       return {
         text: 'Hmm, I\'m having a little trouble connecting right now. You can reach our team at <strong>hello@bindcraft.studio</strong> or call <strong>+1 (555) 012-3456</strong>.',
-        nav: null
+        nav: null,
       };
     }
   }

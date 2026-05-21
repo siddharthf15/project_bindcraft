@@ -494,6 +494,71 @@ app.get('/api/payments', authRequired, (req, res) => {
   respond(res, { payments: mine, total: mine.length });
 });
 
+/* ════════════════════════════════════
+   CHATBOT PROXY  –  POST /api/chat
+   Forwards messages to Claude API so
+   the API key never touches the browser.
+   Set env var:  ANTHROPIC_API_KEY=sk-...
+   ════════════════════════════════════ */
+const https = require('https');
+
+app.post('/api/chat', (req, res) => {
+  const { messages, system } = req.body;
+
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return err(res, 'messages array is required.');
+  }
+
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
+  if (!ANTHROPIC_KEY) {
+    return err(res, 'Chatbot is not configured (missing ANTHROPIC_API_KEY on server).', 503);
+  }
+
+  const payload = JSON.stringify({
+    model:      'claude-sonnet-4-20250514',
+    max_tokens: 1000,
+    system:     system || '',
+    messages:   messages.slice(-20), // keep last 20 turns to avoid huge payloads
+  });
+
+  const options = {
+    hostname: 'api.anthropic.com',
+    path:     '/v1/messages',
+    method:   'POST',
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+      'Content-Length':    Buffer.byteLength(payload),
+    },
+  };
+
+  const proxyReq = https.request(options, (proxyRes) => {
+    let data = '';
+    proxyRes.on('data', chunk => { data += chunk; });
+    proxyRes.on('end', () => {
+      try {
+        const parsed = JSON.parse(data);
+        if (proxyRes.statusCode !== 200) {
+          return res.status(proxyRes.statusCode).json({ success: false, error: parsed.error?.message || 'API error' });
+        }
+        const text = parsed.content?.[0]?.text || '';
+        res.json({ success: true, text });
+      } catch (e) {
+        res.status(500).json({ success: false, error: 'Failed to parse API response.' });
+      }
+    });
+  });
+
+  proxyReq.on('error', (e) => {
+    console.error('[CHAT PROXY ERROR]', e.message);
+    res.status(502).json({ success: false, error: 'Could not reach AI service.' });
+  });
+
+  proxyReq.write(payload);
+  proxyReq.end();
+});
+
 /* ── Health-check ── */
 app.get('/api/health', (_req, res) => {
   const db = readDB();

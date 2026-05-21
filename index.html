@@ -1153,13 +1153,13 @@
         </div>
         <p>Crafting stories that last forever.</p>
         <div class="socials">
-          <a href="#" class="social-btn" aria-label="Instagram">
+          <a href="https://www.instagram.com/bindcraftstudio" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
           </a>
-          <a href="#" class="social-btn" aria-label="Pinterest">
+          <a href="https://www.pinterest.com/bindcraftstudio" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Pinterest">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.03-2.83.19-.78 1.26-5.34 1.26-5.34s-.32-.64-.32-1.59c0-1.49.86-2.6 1.93-2.6.91 0 1.35.68 1.35 1.5 0 .91-.58 2.28-.88 3.55-.25 1.06.53 1.92 1.57 1.92 1.88 0 3.14-2.42 3.14-5.28 0-2.18-1.46-3.71-3.55-3.71-2.42 0-3.84 1.81-3.84 3.68 0 .73.28 1.51.63 1.93a.25.25 0 01.06.24l-.24.96c-.04.15-.13.18-.3.11-1.09-.51-1.77-2.1-1.77-3.39 0-2.76 2.01-5.3 5.79-5.3 3.04 0 5.4 2.17 5.4 5.07 0 3.02-1.9 5.45-4.54 5.45-.89 0-1.72-.46-2.01-1.01l-.54 2.04c-.2.76-.73 1.71-1.09 2.29C11.02 21.96 11.5 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
           </a>
-          <a href="#" class="social-btn" aria-label="Facebook">
+          <a href="https://www.facebook.com/bindcraftstudio" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
           </a>
         </div>
@@ -1181,10 +1181,10 @@
         </div>
         <div class="footer-col">
           <h5>Support</h5>
-          <a href="#">FAQs</a>
-          <a href="#">Shipping Info</a>
-          <a href="#">Returns</a>
-          <a href="#">Privacy Policy</a>
+          <a href="#" onclick="bcOpenInfoModal('faqs');return false;">FAQs</a>
+          <a href="#" onclick="bcOpenInfoModal('shipping');return false;">Shipping Info</a>
+          <a href="#" onclick="bcOpenInfoModal('returns');return false;">Returns</a>
+          <a href="#" onclick="bcOpenInfoModal('privacy');return false;">Privacy Policy</a>
         </div>
       </div>
     </div>
@@ -1260,5 +1260,218 @@
   <script src="api.js"></script>
 
   <script src="auth-gate.js"></script>
+
+  <!-- ── INFO MODALS: FAQs / Shipping / Returns / Privacy ── -->
+  <div id="bcInfoModal" style="
+    display:none;position:fixed;inset:0;z-index:10000;
+    background:rgba(10,5,0,0.75);backdrop-filter:blur(6px);
+    overflow-y:auto;padding:2rem 1rem;" onclick="if(event.target===this)bcCloseInfoModal()">
+    <div style="
+      max-width:700px;margin:auto;
+      background:linear-gradient(160deg,#1e1208 0%,#2a1a08 100%);
+      border:1px solid rgba(201,151,59,0.25);border-radius:20px;
+      padding:2.5rem 2rem;position:relative;
+      box-shadow:0 32px 80px rgba(0,0,0,0.6);">
+      <button onclick="bcCloseInfoModal()" style="
+        position:absolute;top:1.25rem;right:1.25rem;
+        width:36px;height:36px;border-radius:50%;
+        background:rgba(253,248,240,0.07);border:1px solid rgba(253,248,240,0.12);
+        color:rgba(253,248,240,0.6);font-size:1rem;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        transition:all .2s;" onmouseenter="this.style.background='rgba(201,151,59,0.2)';this.style.color='#f0c96a'" onmouseleave="this.style.background='rgba(253,248,240,0.07)';this.style.color='rgba(253,248,240,0.6)'">✕</button>
+      <div id="bcInfoContent"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ════════════════════════════════════════════
+     BindCraft – Footer Info Modals
+     FAQs · Shipping · Returns · Privacy Policy
+     Uses event delegation — no inline handlers
+  ════════════════════════════════════════════ */
+  (function () {
+
+    /* ── helpers ── */
+    function sec(title, body) {
+      return '<div style="margin-bottom:1.75rem">'
+        + '<h4 style="font-size:.95rem;font-weight:700;color:#f0c96a;margin:0 0 .5rem;font-family:\'DM Sans\',sans-serif">' + title + '</h4>'
+        + '<div style="font-size:.87rem;color:rgba(253,248,240,.72);line-height:1.8">' + body + '</div>'
+        + '</div>';
+    }
+
+    function ul(items) {
+      return '<ul style="margin:.4rem 0 0;padding-left:1.25rem;line-height:2">'
+        + items.map(function(i){ return '<li>' + i + '</li>'; }).join('')
+        + '</ul>';
+    }
+
+    function faq(q, a) {
+      return '<div class="bc-faq-item" style="border-bottom:1px solid rgba(201,151,59,.12);padding:.9rem 0">'
+        + '<button class="bc-faq-btn" type="button" style="width:100%;background:none;border:none;cursor:pointer;'
+        +   'display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:0;text-align:left">'
+        +   '<span style="font-size:.9rem;font-weight:600;color:rgba(253,248,240,.9)">' + q + '</span>'
+        +   '<svg class="bc-faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9973b" stroke-width="2.5" '
+        +       'style="flex-shrink:0;transition:transform .3s ease"><polyline points="6 9 12 15 18 9"/></svg>'
+        + '</button>'
+        + '<div class="bc-faq-body" style="max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .3s ease;opacity:0">'
+        +   '<p style="margin:.7rem 0 0;font-size:.86rem;color:rgba(253,248,240,.65);line-height:1.75">' + a + '</p>'
+        + '</div>'
+        + '</div>';
+    }
+
+    /* ── page content ── */
+    var PAGES = {
+      faqs: function() {
+        return '<h2 style="font-family:\'Playfair Display\',serif;color:#f0c96a;font-size:1.55rem;margin:0 0 .2rem">Frequently Asked Questions</h2>'
+          + '<p style="color:rgba(253,248,240,.35);font-size:.78rem;margin:0 0 1.75rem;letter-spacing:.06em;text-transform:uppercase">Everything you need to know</p>'
+          + faq('How long does production take?',
+              'Standard orders are produced in 5–7 business days after your digital proof is approved. Express production (2–3 days) is available for an additional fee. Rush same-day options may be available — contact us to check availability.')
+          + faq('Do I get a proof before printing?',
+              'Yes — every single order includes a complimentary digital proof review. Our design team will send you a full preview of your book layout before anything goes to print. We will not begin production until you are 100% happy.')
+          + faq('What file formats can I upload?',
+              'We accept JPEG, PNG, TIFF, and PDF files. For best print quality please upload images at a minimum resolution of 300 DPI. Our team will flag any low-resolution images during the proof stage.')
+          + faq('Can I make changes after placing my order?',
+              'You can request changes during the proof review stage at no charge. Once you have approved the proof and production has begun, changes may incur a restart fee. Contact us as soon as possible if you need to amend an order.')
+          + faq('Do you ship internationally?',
+              'Yes! We ship to 40+ countries worldwide. International delivery typically takes 7–14 business days depending on destination. Orders over ₹3,000 qualify for free domestic shipping.')
+          + faq('What paper types are available?',
+              'We offer white gloss, cream matte, and premium lustre paper. Photo books default to gloss or lustre; journals and corporate books default to cream matte. You can specify your preference in the order notes.')
+          + faq('Are bulk or corporate discounts available?',
+              'Yes — orders of 10+ copies receive a 15% discount; 25+ copies receive 25% off. Corporate accounts with recurring orders get dedicated account management. Contact us for a custom quote.');
+      },
+
+      shipping: function() {
+        return '<h2 style="font-family:\'Playfair Display\',serif;color:#f0c96a;font-size:1.55rem;margin:0 0 .2rem">Shipping Information</h2>'
+          + '<p style="color:rgba(253,248,240,.35);font-size:.78rem;margin:0 0 1.75rem;letter-spacing:.06em;text-transform:uppercase">Delivery details &amp; timelines</p>'
+          + sec('🚚 Domestic Shipping (India)', ul([
+              'Standard delivery 4–6 business days — <strong style="color:#f0c96a">Free</strong> on orders over ₹3,000',
+              'Standard delivery under ₹3,000: ₹149',
+              'Express delivery (1–2 days): ₹349',
+              'Same-day delivery in select cities: ₹599'
+            ]))
+          + sec('✈️ International Shipping', ul([
+              'South Asia (7–10 days): ₹799',
+              'Middle East &amp; Southeast Asia (10–14 days): ₹1,299',
+              'Europe &amp; Americas (14–21 days): ₹1,999',
+              'Free international shipping on orders over ₹15,000'
+            ]))
+          + sec('📦 Packaging',
+              'Every book is wrapped in acid-free tissue paper, placed in a custom BindCraft box, and surrounded by protective foam inserts. Oversized orders are double-boxed for maximum protection during transit.')
+          + sec('🔍 Order Tracking',
+              'Once your order ships you will receive an email with a tracking number. You can monitor your delivery in real time through our courier partner\'s portal. We use Blue Dart, Delhivery, and DHL depending on your location and order size.')
+          + sec('⚠️ Delivery Issues',
+              'If your order arrives damaged or does not arrive within the estimated window, please contact us within 7 days of the expected delivery date. We will arrange a replacement or full refund at no cost to you.');
+      },
+
+      returns: function() {
+        return '<h2 style="font-family:\'Playfair Display\',serif;color:#f0c96a;font-size:1.55rem;margin:0 0 .2rem">Returns &amp; Refunds</h2>'
+          + '<p style="color:rgba(253,248,240,.35);font-size:.78rem;margin:0 0 1.75rem;letter-spacing:.06em;text-transform:uppercase">Our satisfaction guarantee</p>'
+          + sec('💛 Our Promise',
+              'Every BindCraft book comes with our quality guarantee. If your book has a printing defect, binding issue, or arrives damaged, we will reprint or refund it — no questions asked.')
+          + sec('✅ Eligible for Return / Reprint', ul([
+              'Printing errors (colour shift, misprints, missing pages)',
+              'Binding defects (pages falling out, spine damage)',
+              'Shipping damage — box damage accepted as proof',
+              'Wrong item received'
+            ]))
+          + sec('❌ Not Eligible',
+              'Because each book is custom-made to your specifications, we cannot accept returns for change of mind, incorrect files submitted by the customer, or approved proofs that were later regretted. We encourage you to review your proof carefully.')
+          + sec('📋 How to Request a Return',
+              'Email <a href="mailto:support@bindcraft.in" style="color:#f0c96a">support@bindcraft.in</a> with your order number and 2–3 photos showing the issue. Our team responds within 24 hours. Approved returns or reprints are processed within 3–5 business days.')
+          + sec('💳 Refund Timeline',
+              'Refunds are issued to your original payment method. Card refunds take 5–7 business days. UPI and net banking refunds reflect within 3 business days. Store credit is instant.');
+      },
+
+      privacy: function() {
+        return '<h2 style="font-family:\'Playfair Display\',serif;color:#f0c96a;font-size:1.55rem;margin:0 0 .2rem">Privacy Policy</h2>'
+          + '<p style="color:rgba(253,248,240,.35);font-size:.78rem;margin:0 0 1.75rem;letter-spacing:.06em;text-transform:uppercase">Last updated May 2025</p>'
+          + sec('1. Information We Collect',
+              'We collect information you provide directly: your name, email address, phone number, delivery address, and the photos and files you upload for your book. We also collect standard server logs (IP address, browser type, pages visited) for security and analytics.')
+          + sec('2. How We Use Your Information', ul([
+              'Fulfil and deliver your orders',
+              'Send order confirmations, proofs, and shipping updates',
+              'Respond to customer service enquiries',
+              'Improve our products and website experience',
+              'Send occasional promotional emails (you may opt out at any time)'
+            ]))
+          + sec('3. Your Photos &amp; Files',
+              'Files you upload are used solely to produce your order. We do not share, sell, or use your photos for marketing without your explicit written consent. Files are securely deleted from our servers 90 days after order completion.')
+          + sec('4. Data Sharing',
+              'We do not sell your personal data. We share only what is necessary with trusted service providers (payment processors, shipping couriers) who are contractually bound to protect your data. We may disclose data if required by law.')
+          + sec('5. Cookies',
+              'We use essential cookies to keep you signed in and remember your cart. We use anonymised analytics cookies to understand site usage. You can disable cookies in your browser settings; this may affect some site functionality.')
+          + sec('6. Your Rights',
+              'You have the right to access, correct, or delete your personal data at any time. To submit a request email <a href="mailto:privacy@bindcraft.in" style="color:#f0c96a">privacy@bindcraft.in</a>. We will respond within 30 days. You may also opt out of marketing emails via the unsubscribe link in any email.')
+          + sec('7. Contact',
+              'Questions about this policy? Write to us at <a href="mailto:privacy@bindcraft.in" style="color:#f0c96a">privacy@bindcraft.in</a> or BindCraft Studio, 42 Press Lane, Connaught Place, New Delhi 110001.');
+      }
+    };
+
+    /* ── open / close ── */
+    window.bcOpenInfoModal = function(key) {
+      var modal   = document.getElementById('bcInfoModal');
+      var content = document.getElementById('bcInfoContent');
+      if (!modal || !content || !PAGES[key]) return;
+      content.innerHTML = PAGES[key]();
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      /* attach accordion via delegation on fresh content */
+
+    };
+
+    window.bcCloseInfoModal = function() {
+      var modal = document.getElementById('bcInfoModal');
+      if (modal) modal.style.display = 'none';
+      document.body.style.overflow = '';
+    };
+
+    /* ── FAQ accordion — pure event delegation, no inline onclick ── */
+    /* ── FAQ accordion — one document listener, data-open tracks state ── */
+    document.addEventListener('click', function(e) {
+      var modal = document.getElementById('bcInfoModal');
+      if (!modal || modal.style.display === 'none') return;
+
+      var btn = e.target.closest('.bc-faq-btn');
+      if (!btn) return;
+
+      var item  = btn.closest('.bc-faq-item');
+      if (!item) return;
+      var body  = item.querySelector('.bc-faq-body');
+      var arrow = btn.querySelector('.bc-faq-arrow');
+      if (!body) return;
+
+      var isOpen = item.getAttribute('data-open') === '1';
+
+      /* collapse all FAQ items */
+      modal.querySelectorAll('.bc-faq-item').forEach(function(sib) {
+        sib.setAttribute('data-open', '0');
+        var b = sib.querySelector('.bc-faq-body');
+        var a = sib.querySelector('.bc-faq-arrow');
+        if (b) { b.style.maxHeight = '0'; b.style.opacity = '0'; }
+        if (a) { a.style.transform = 'rotate(0deg)'; }
+      });
+
+      /* open the clicked one if it was closed */
+      if (!isOpen) {
+        item.setAttribute('data-open', '1');
+        body.style.maxHeight = '600px'; /* generous fixed height — avoids scrollHeight=0 on fresh nodes */
+        body.style.opacity   = '1';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+      }
+    });
+
+    /* ── close on backdrop click ── */
+    document.addEventListener('click', function(e) {
+      var modal = document.getElementById('bcInfoModal');
+      if (modal && e.target === modal) window.bcCloseInfoModal();
+    });
+
+    /* ── close on Escape ── */
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') window.bcCloseInfoModal();
+    });
+
+  })();
+  </script>
 </body>
 </html>

@@ -292,13 +292,23 @@
      5. Chatbot launcher → live chat btn
      ════════════════════════════════════ */
   ready(function () {
-    var liveBtn  = document.getElementById('liveChatBtn');
-    var launcher = document.getElementById('bc-launcher');
-    if (liveBtn && launcher) {
-      liveBtn.addEventListener('click', function () {
-        launcher.click();
-      });
-    }
+    var liveBtn = document.getElementById('liveChatBtn');
+    if (!liveBtn) return;
+
+    liveBtn.addEventListener('click', function () {
+      /* bc_openChat() is exposed globally by chatbot.js.
+         If chatbot hasn't initialised yet, fall back to clicking
+         the launcher directly once it appears. */
+      if (typeof window.bc_openChat === 'function') {
+        window.bc_openChat();
+      } else {
+        /* chatbot.js fires 'bc:ready' when it's done building the UI */
+        document.addEventListener('bc:ready', function handler() {
+          document.removeEventListener('bc:ready', handler);
+          if (typeof window.bc_openChat === 'function') window.bc_openChat();
+        });
+      }
+    });
   });
 
   /* ════════════════════════════════════

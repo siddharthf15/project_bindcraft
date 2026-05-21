@@ -1047,7 +1047,7 @@
               </div>
               <div class="contact-channel-arrow">→</div>
             </a>
-            <button class="contact-channel contact-channel-chat" id="liveChatBtn">
+            <button class="contact-channel contact-channel-chat" id="liveChatBtn" type="button" onclick="if(typeof window.bc_openChat==='function'){window.bc_openChat();}else{var l=document.getElementById('bc-launcher');if(l)l.click();}">
               <div class="contact-channel-icon contact-channel-icon-chat">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
               </div>
